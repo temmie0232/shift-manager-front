@@ -1,16 +1,23 @@
-import { Employee } from "@/types/employee";
+import { Employee } from '@/types/employee';
 
 export async function fetchEmployees(): Promise<Employee[]> {
-    const response = await fetch('http://your-rails-api.com/api/employees', {
-        headers: {
-            'Content-Type': 'application/json',
-            // 必要に応じて認証ヘッダーを追加
-        },
-    });
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-    if (!response.ok) {
-        throw new Error('Failed to fetch employees');
+    try {
+        const response = await fetch(`${apiUrl}/api/employees`, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data as Employee[];
+    } catch (error) {
+        console.error('Failed to fetch employees:', error);
+        throw error;
     }
-
-    return response.json();
 }
