@@ -1,5 +1,4 @@
-'use client'
-
+"use client"
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -13,18 +12,19 @@ interface LoginFormProps {
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ employees }) => {
-    const [selectedEmployee, setSelectedEmployee] = useState('');
+    const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>('');
     const [birthday, setBirthday] = useState('');
     const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!selectedEmployeeId) return;
         try {
             const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
             const response = await fetch(`${apiUrl}/api/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ employeeId: selectedEmployee, birthday }),
+                body: JSON.stringify({ employeeId: selectedEmployeeId, birthday }),
             });
 
             if (response.ok) {
@@ -43,13 +43,15 @@ const LoginForm: React.FC<LoginFormProps> = ({ employees }) => {
         <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
                 <label htmlFor="user-type" className="block text-sm font-medium text-gray-700">ユーザー</label>
-                <Select onValueChange={setSelectedEmployee}>
+                <Select onValueChange={setSelectedEmployeeId} value={selectedEmployeeId}>
                     <SelectTrigger id="user-type">
                         <SelectValue placeholder="選択してください" />
                     </SelectTrigger>
                     <SelectContent>
                         {employees.map((employee) => (
-                            <SelectItem key={employee.id} value={employee.id}>{employee.name}</SelectItem>
+                            <SelectItem key={employee.id} value={employee.id.toString()}>
+                                {employee.name}
+                            </SelectItem>
                         ))}
                     </SelectContent>
                 </Select>
