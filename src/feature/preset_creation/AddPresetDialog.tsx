@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Preset } from '@/types/preset';
 import ColorRadioGroup from './ColorRadioGroup';
+import TimeSelect from './TimeSelect';
 
 interface AddPresetDialogProps {
     isOpen: boolean;
@@ -56,25 +57,25 @@ const AddPresetDialog: React.FC<AddPresetDialogProps> = ({
                     <Label htmlFor="startTime" className="text-right">
                         開始時間
                     </Label>
-                    <Input
-                        id="startTime"
-                        type="time"
-                        value={newPreset.startTime}
-                        onChange={(e) => setNewPreset({ ...newPreset, startTime: e.target.value })}
-                        className="col-span-3"
-                    />
+                    <div className="col-span-3">
+                        <TimeSelect
+                            value={newPreset.startTime}
+                            onChange={(startTime) => setNewPreset({ ...newPreset, startTime })}
+                            isStartTime={true}
+                        />
+                    </div>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="endTime" className="text-right">
                         終了時間
                     </Label>
-                    <Input
-                        id="endTime"
-                        type="time"
-                        value={newPreset.endTime}
-                        onChange={(e) => setNewPreset({ ...newPreset, endTime: e.target.value })}
-                        className="col-span-3"
-                    />
+                    <div className="col-span-3">
+                        <TimeSelect
+                            value={newPreset.endTime}
+                            onChange={(endTime) => setNewPreset({ ...newPreset, endTime })}
+                            isStartTime={false}
+                        />
+                    </div>
                 </div>
             </div>
             <Button onClick={onAdd}>追加</Button>

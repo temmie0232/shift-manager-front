@@ -16,9 +16,10 @@ const PresetCreationPage = () => {
     const [newPreset, setNewPreset] = useState<Omit<Preset, 'id'>>({
         title: '',
         color: '#e74c3c',
-        startTime: '',
-        endTime: '',
+        startTime: '07:00',
+        endTime: '11:00',
     });
+
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
