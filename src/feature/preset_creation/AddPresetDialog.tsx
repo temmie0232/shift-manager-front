@@ -32,7 +32,7 @@ const AddPresetDialog: React.FC<AddPresetDialogProps> = ({
             <DialogHeader>
                 <DialogTitle>新しいプリセットを追加</DialogTitle>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
+            <div className="grid gap-6 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="title" className="text-right">
                         シフト名
@@ -40,6 +40,7 @@ const AddPresetDialog: React.FC<AddPresetDialogProps> = ({
                     <Input
                         id="title"
                         value={newPreset.title}
+                        placeholder='早番, 遅番, 学校がある日, 水曜日, etc.'
                         onChange={(e) => setNewPreset({ ...newPreset, title: e.target.value })}
                         className="col-span-3"
                     />
