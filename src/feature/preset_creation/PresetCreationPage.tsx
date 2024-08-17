@@ -15,7 +15,7 @@ const PresetCreationPage = () => {
     const [presetToDelete, setPresetToDelete] = useState<string | null>(null);
     const [newPreset, setNewPreset] = useState<Omit<Preset, 'id'>>({
         title: '',
-        color: '#000000',
+        color: '#e74c3c',
         startTime: '',
         endTime: '',
     });
