@@ -16,8 +16,8 @@ const Header: React.FC = () => {
                 return 'スケジュール';
             case '/shift_request':
                 return '希望シフト入力';
-            case '/pattern_creation':
-                return 'パターンの作成';
+            case '/preset_creation':
+                return 'プリセットの作成';
             case '/chat':
                 return 'チャット';
             case '/status_check':
@@ -51,7 +51,7 @@ const Header: React.FC = () => {
                     <nav className="flex flex-col space-y-4">
                         <Button variant="ghost" onClick={() => router.push('/schedule')}>スケジュール確認</Button>
                         <Button variant="ghost" onClick={() => router.push('/shift_request')}>希望シフト提出</Button>
-                        <Button variant="ghost" onClick={() => router.push('/pattern_creation')}>パターンの作成</Button>
+                        <Button variant="ghost" onClick={() => router.push('/preset_creation')}>パターンの作成</Button>
                         <Button variant="ghost" onClick={() => router.push('/chat')}>チャット</Button>
                         <Button variant="ghost" onClick={() => router.push('/status_check')}>給与確認</Button>
                     </nav>

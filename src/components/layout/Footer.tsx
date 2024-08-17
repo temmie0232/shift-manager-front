@@ -45,11 +45,11 @@ const Footer: React.FC = () => {
                         <FaEdit size={getIconSize('shift_request')} />
                     </TabsTrigger>
                     <TabsTrigger
-                        value="pattern_creation"
-                        onClick={() => handleNavigation('/pattern_creation')}
-                        className={`flex flex-col items-center ${currentTab === 'pattern_creation' ? 'text-zinc-950' : ''}`}
+                        value="preset_creation"
+                        onClick={() => handleNavigation('/preset_creation')}
+                        className={`flex flex-col items-center ${currentTab === 'preset_creation' ? 'text-zinc-950' : ''}`}
                     >
-                        <MdOutlinePublishedWithChanges size={getIconSize('pattern_creation')} />
+                        <MdOutlinePublishedWithChanges size={getIconSize('preset_creation')} />
                     </TabsTrigger>
                     <TabsTrigger
                         value="chat"
