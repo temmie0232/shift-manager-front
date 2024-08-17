@@ -5,3 +5,11 @@ export type Preset = {
     startTime: string;
     endTime: string;
 };
+
+export type PresetBackend = {
+    id: string;
+    title: string;
+    color: string;
+    start_time: string;
+    end_time: string;
+};
