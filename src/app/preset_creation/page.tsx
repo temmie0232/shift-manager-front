@@ -1,11 +1,10 @@
+import PresetCreationPage from '@/feature/preset_creation/PresetCreationPage'
 import React from 'react'
 
-const page = () => {
+const Page = () => {
     return (
-        <div>
-            preset_creation
-        </div>
+        <PresetCreationPage />
     )
 }
 
-export default page
+export default Page
