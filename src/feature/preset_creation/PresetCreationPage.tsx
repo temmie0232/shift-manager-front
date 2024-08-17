@@ -19,14 +19,21 @@ const PresetCreationPage = () => {
         startTime: '',
         endTime: '',
     });
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const loadPresets = async () => {
+            setIsLoading(true);
+            setError(null);
             try {
                 const fetchedPresets = await fetchPresets();
                 setPresets(fetchedPresets);
             } catch (error) {
                 console.error('Failed to load presets:', error);
+                setError('プリセットの読み込みに失敗しました。もう一度お試しください。');
+            } finally {
+                setIsLoading(false);
             }
         };
         loadPresets();
@@ -44,6 +51,7 @@ const PresetCreationPage = () => {
             setNewPreset({ title: '', color: '#000000', startTime: '', endTime: '' });
         } catch (error) {
             console.error('Failed to add preset:', error);
+            setError('プリセットの追加に失敗しました。もう一度お試しください。');
         }
     };
 
@@ -61,9 +69,18 @@ const PresetCreationPage = () => {
                 setPresetToDelete(null);
             } catch (error) {
                 console.error('Failed to delete preset:', error);
+                setError('プリセットの削除に失敗しました。もう一度お試しください。');
             }
         }
     };
+
+    if (isLoading) {
+        return <div className="p-4">読み込み中...</div>;
+    }
+
+    if (error) {
+        return <div className="p-4 text-red-500">{error}</div>;
+    }
 
     return (
         <div className="p-4">
