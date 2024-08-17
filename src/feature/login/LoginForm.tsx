@@ -41,7 +41,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ employees }) => {
             });
 
             if (response.ok) {
-                router.push('/dashboard'); // ログイン成功時、ダッシュボードページにリダイレクトします。
+                router.push('/schedule'); // ログイン成功時、ダッシュボードページにリダイレクトします。
             } else {
                 console.error('Login failed');
                 // TODO: ユーザーへのフィードバック機能を実装する（例：エラーメッセージの表示）
