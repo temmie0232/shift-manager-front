@@ -2,17 +2,18 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Preset } from '@/types/preset';
 import { fetchPresets } from '@/lib/api';
-import { ja } from 'date-fns/locale';
+import { format, isSameDay } from 'date-fns';
+import CustomCalendar from '@/components/elements/CustomCalendar';
 
 const ShiftRequestPage: React.FC = () => {
     const [selectedDates, setSelectedDates] = useState<Date[]>([]);
     const [presets, setPresets] = useState<Preset[]>([]);
     const [selectedPreset, setSelectedPreset] = useState<Preset | null>(null);
-    const [shiftData, setShiftData] = useState<{ [key: string]: Preset }>({});
+    const [shiftData, setShiftData] = useState<{ [key: string]: { color: string } }>({});
     const router = useRouter();
 
     useEffect(() => {
@@ -27,17 +28,26 @@ const ShiftRequestPage: React.FC = () => {
         loadPresets();
     }, []);
 
-    const handleDateSelect = (dates: Date[] | undefined) => {
-        if (dates) {
-            setSelectedDates(dates);
-            if (selectedPreset) {
-                const newShiftData = { ...shiftData };
-                dates.forEach(date => {
-                    const dateString = date.toISOString().split('T')[0];
-                    newShiftData[dateString] = selectedPreset;
-                });
-                setShiftData(newShiftData);
-            }
+    const handleDateSelect = (date: Date) => {
+        if (selectedPreset) {
+            const dateString = format(date, 'yyyy-MM-dd');
+            setSelectedDates(prev => {
+                const isAlreadySelected = prev.some(d => isSameDay(d, date));
+                if (isAlreadySelected) {
+                    return prev.filter(d => !isSameDay(d, date));
+                } else {
+                    return [...prev, date];
+                }
+            });
+            setShiftData(prev => {
+                const newShiftData = { ...prev };
+                if (newShiftData[dateString]) {
+                    delete newShiftData[dateString];
+                } else {
+                    newShiftData[dateString] = { color: selectedPreset.color };
+                }
+                return newShiftData;
+            });
         }
     };
 
@@ -56,6 +66,7 @@ const ShiftRequestPage: React.FC = () => {
     const handleReset = () => {
         setShiftData({});
         setSelectedDates([]);
+        setSelectedPreset(null);
     };
 
     const handleSubmit = () => {
@@ -64,26 +75,27 @@ const ShiftRequestPage: React.FC = () => {
 
     return (
         <div className="p-4 flex flex-col h-screen">
-            <div className="flex-grow overflow-auto mt-3">
-                <Calendar
-                    mode="multiple"
-                    selected={selectedDates}
-                    onSelect={handleDateSelect}
-                    className="rounded-md border mb-4 w-full"
-                    locale={ja}
+            <div className="flex-grow overflow-auto mt-1">
+                <CustomCalendar
+                    selectedDates={selectedDates}
+                    onDateSelect={handleDateSelect}
+                    shiftData={shiftData}
                 />
-                <div className="grid grid-cols-3 gap-2 mb-4">
-                    {presets.map((preset) => (
-                        <Button
-                            key={preset.id}
-                            onClick={() => handlePresetClick(preset)}
-                            className="p-2"
-                            style={{ backgroundColor: preset.color }}
-                        >
-                            {preset.title}
-                        </Button>
-                    ))}
-                </div>
+                <ScrollArea className="h-60 mt-4 rounded-md border p-3">
+                    <div className="p-4">
+                        {presets.map((preset) => (
+                            <Button
+                                key={preset.id}
+                                onClick={() => handlePresetClick(preset)}
+                                className={`w-full mb-2 justify-start ${selectedPreset?.id === preset.id ? 'ring-2 ring-offset-2 ring-blue-500' : ''}`}
+                                style={{ backgroundColor: preset.color }}
+                            >
+                                <span className="mr-2">{preset.title}:</span>
+                                <span>{preset.startTime} - {preset.endTime}</span>
+                            </Button>
+                        ))}
+                    </div>
+                </ScrollArea>
             </div>
             <div className="mt-auto">
                 <div className="grid grid-cols-2 gap-2 mb-2">
