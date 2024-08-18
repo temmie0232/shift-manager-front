@@ -29,6 +29,7 @@ const AddPresetDialog: React.FC<AddPresetDialogProps> = ({
 }) => {
     const [isTimeDrawerOpen, setIsTimeDrawerOpen] = useState(false);
     const [timeType, setTimeType] = useState<'start' | 'end'>('start');
+    const [titleError, setTitleError] = useState<string | null>(null);
 
     const handleTimeSelection = (time: string) => {
         setNewPreset({
@@ -43,6 +44,24 @@ const AddPresetDialog: React.FC<AddPresetDialogProps> = ({
         setIsTimeDrawerOpen(true);
     };
 
+    const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newTitle = e.target.value;
+        setNewPreset({ ...newPreset, title: newTitle });
+        if (newTitle.trim() === '') {
+            setTitleError('シフト名を入力してください');
+        } else {
+            setTitleError(null);
+        }
+    };
+
+    const handleAdd = () => {
+        if (newPreset.title.trim() === '') {
+            setTitleError('シフト名を入力してください');
+        } else {
+            onAdd();
+        }
+    };
+
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent>
@@ -54,13 +73,16 @@ const AddPresetDialog: React.FC<AddPresetDialogProps> = ({
                         <Label htmlFor="title" className="text-right">
                             シフト名
                         </Label>
-                        <Input
-                            id="title"
-                            value={newPreset.title}
-                            placeholder='早番, 遅番, 学校がある日, 水曜日, etc.'
-                            onChange={(e) => setNewPreset({ ...newPreset, title: e.target.value })}
-                            className="col-span-3"
-                        />
+                        <div className="col-span-3">
+                            <Input
+                                id="title"
+                                value={newPreset.title}
+                                placeholder='早番, 遅番, 学校がある日, 水曜日, etc.'
+                                onChange={handleTitleChange}
+                                className={titleError ? 'border-red-500' : ''}
+                            />
+                            {titleError && <p className="text-red-500 text-sm mt-1">{titleError}</p>}
+                        </div>
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label className="text-right">表示色</Label>
@@ -93,7 +115,7 @@ const AddPresetDialog: React.FC<AddPresetDialogProps> = ({
                         </div>
                     </div>
                 </div>
-                <Button onClick={onAdd} className="w-full">追加</Button>
+                <Button onClick={handleAdd} className="w-full">追加</Button>
             </DialogContent>
             <TimeSelectionDrawer
                 isOpen={isTimeDrawerOpen}

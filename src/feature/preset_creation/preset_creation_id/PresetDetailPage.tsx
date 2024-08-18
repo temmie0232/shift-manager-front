@@ -19,6 +19,7 @@ const PresetDetailPage: React.FC<PresetDetailPageProps> = ({ presetId }) => {
     const [error, setError] = useState<string | null>(null);
     const [isTimeDrawerOpen, setIsTimeDrawerOpen] = useState(false);
     const [timeType, setTimeType] = useState<'start' | 'end'>('start');
+    const [titleError, setTitleError] = useState<string | null>(null);
     const router = useRouter();
 
     useEffect(() => {
@@ -40,6 +41,10 @@ const PresetDetailPage: React.FC<PresetDetailPageProps> = ({ presetId }) => {
 
     const handleSave = async () => {
         if (preset) {
+            if (preset.title.trim() === '') {
+                setTitleError('シフト名を入力してください');
+                return;
+            }
             try {
                 await updatePreset(preset);
                 router.push('/preset_creation');
@@ -81,6 +86,16 @@ const PresetDetailPage: React.FC<PresetDetailPageProps> = ({ presetId }) => {
         setIsTimeDrawerOpen(true);
     };
 
+    const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newTitle = e.target.value;
+        setPreset(prev => prev ? { ...prev, title: newTitle } : null);
+        if (newTitle.trim() === '') {
+            setTitleError('シフト名を入力してください');
+        } else {
+            setTitleError(null);
+        }
+    };
+
     if (isLoading) {
         return <div className="p-4">読み込み中...</div>;
     }
@@ -102,8 +117,10 @@ const PresetDetailPage: React.FC<PresetDetailPageProps> = ({ presetId }) => {
                         <Input
                             id="title"
                             value={preset.title}
-                            onChange={(e) => setPreset({ ...preset, title: e.target.value })}
+                            onChange={handleTitleChange}
+                            className={titleError ? 'border-red-500' : ''}
                         />
+                        {titleError && <p className="text-red-500 text-sm mt-1">{titleError}</p>}
                     </div>
                     <div>
                         <Label>表示色</Label>
