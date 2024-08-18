@@ -6,7 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter } from "@/components/ui/drawer";
 import { Preset } from '@/types/preset';
 import { fetchPresets } from '@/lib/api';
-import { format, isSameDay } from 'date-fns';
+import { format, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from 'date-fns';
 import CustomCalendar from '@/components/elements/CustomCalendar';
 
 const ShiftRequestPage: React.FC = () => {
@@ -52,6 +52,49 @@ const ShiftRequestPage: React.FC = () => {
         }
     };
 
+    const handleWeekdaySelect = (weekday: number) => {
+        if (selectedPreset) {
+            const currentDate = new Date();
+            const nextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+            const startOfNextMonth = startOfMonth(nextMonth);
+            const endOfNextMonth = endOfMonth(nextMonth);
+            const daysInMonth = eachDayOfInterval({ start: startOfNextMonth, end: endOfNextMonth });
+
+            const selectedDays = daysInMonth.filter(day => getDay(day) === weekday);
+
+            // Check if all days of this weekday are already selected
+            const allSelected = selectedDays.every(day =>
+                shiftData[format(day, 'yyyy-MM-dd')]?.color === selectedPreset.color
+            );
+
+            setSelectedDates(prev => {
+                if (allSelected) {
+                    // If all are selected, remove them
+                    return prev.filter(date => !selectedDays.some(day => isSameDay(day, date)));
+                } else {
+                    // If not all are selected, add the missing ones
+                    const newDates = selectedDays.filter(day =>
+                        !prev.some(date => isSameDay(date, day))
+                    );
+                    return [...prev, ...newDates];
+                }
+            });
+
+            setShiftData(prev => {
+                const newShiftData = { ...prev };
+                selectedDays.forEach(day => {
+                    const dateString = format(day, 'yyyy-MM-dd');
+                    if (allSelected) {
+                        delete newShiftData[dateString];
+                    } else {
+                        newShiftData[dateString] = { color: selectedPreset.color };
+                    }
+                });
+                return newShiftData;
+            });
+        }
+    };
+
     const handlePresetClick = (preset: Preset) => {
         setSelectedPreset(preset);
     };
@@ -84,6 +127,7 @@ const ShiftRequestPage: React.FC = () => {
                     <CustomCalendar
                         selectedDates={selectedDates}
                         onDateSelect={handleDateSelect}
+                        onWeekdaySelect={handleWeekdaySelect}
                         shiftData={shiftData}
                         className="border border-gray-200 rounded-lg shadow-sm mb-4"
                     />

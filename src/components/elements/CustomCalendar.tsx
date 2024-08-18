@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, format, isSameMonth, addMonths, isBefore, isAfter, startOfDay } from 'date-fns';
+import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, format, isSameMonth, addMonths, isBefore, isAfter, startOfDay, getDay } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -8,11 +8,12 @@ import { cn } from '@/lib/utils';
 interface CustomCalendarProps {
     selectedDates: Date[];
     onDateSelect: (date: Date) => void;
+    onWeekdaySelect: (weekday: number) => void;
     shiftData: { [key: string]: { color: string } };
     className?: string;
 }
 
-const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDates, onDateSelect, shiftData, className }) => {
+const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDates, onDateSelect, onWeekdaySelect, shiftData, className }) => {
     const today = startOfDay(new Date());
     const nextMonth = startOfMonth(addMonths(today, 1));
     const [currentMonth, setCurrentMonth] = useState(nextMonth);
@@ -70,10 +71,14 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDates, onDateSe
                     </Button>
                 </div>
                 <div className="grid grid-cols-7 gap-1">
-                    {weekdays.map(day => (
-                        <div key={day} className="text-center font-medium text-gray-500 mb-1">
+                    {weekdays.map((day, index) => (
+                        <button
+                            key={day}
+                            className="text-center font-medium text-gray-500 mb-1 hover:bg-gray-100 rounded-md"
+                            onClick={() => onWeekdaySelect(index)}
+                        >
                             {day}
-                        </div>
+                        </button>
                     ))}
                     {days.map(day => {
                         const dateKey = format(day, 'yyyy-MM-dd');
