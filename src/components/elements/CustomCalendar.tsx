@@ -3,14 +3,16 @@ import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, fo
 import { ja } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { cn } from '@/lib/utils';
 
 interface CustomCalendarProps {
     selectedDates: Date[];
     onDateSelect: (date: Date) => void;
     shiftData: { [key: string]: { color: string } };
+    className?: string;
 }
 
-const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDates, onDateSelect, shiftData }) => {
+const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDates, onDateSelect, shiftData, className }) => {
     const [currentMonth, setCurrentMonth] = useState(addMonths(new Date(), 1));
 
     const nextMonth = () => {
@@ -31,7 +33,7 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDates, onDateSe
     const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
 
     return (
-        <div className="bg-white rounded-lg shadow">
+        <div className={cn("bg-white rounded-lg shadow", className)}>
             <div className="p-4">
                 <div className="flex justify-between items-center mb-4">
                     <Button onClick={prevMonth} variant="ghost" size="icon">
@@ -53,15 +55,18 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDates, onDateSe
                     {days.map(day => {
                         const dateKey = format(day, 'yyyy-MM-dd');
                         const shiftInfo = shiftData[dateKey];
-                        const bgColor = shiftInfo ? shiftInfo.color : 'white';
+                        const borderColor = shiftInfo ? shiftInfo.color : 'transparent';
                         const textColor = isSameMonth(day, currentMonth) ? 'text-gray-900' : 'text-gray-400';
 
                         return (
                             <button
                                 key={day.toISOString()}
                                 onClick={() => onDateSelect(day)}
-                                className={`p-2 ${textColor} hover:opacity-80 transition-all rounded-md text-sm`}
-                                style={{ backgroundColor: bgColor }}
+                                className={`p-2 ${textColor} hover:bg-gray-100 transition-all rounded-md text-sm relative`}
+                                style={{
+                                    border: `4px solid ${borderColor}`, // 縁線を5pxに変更
+                                    backgroundColor: 'white'
+                                }}
                             >
                                 {format(day, 'd')}
                             </button>
