@@ -5,18 +5,16 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogFooter,
     DialogDescription,
+    DialogFooter,
 } from "@/components/ui/dialog";
 
-// DeleteConfirmDialogコンポーネントのプロップスを定義
 interface DeleteConfirmDialogProps {
-    isOpen: boolean;  // ダイアログの開閉状態
-    onOpenChange: (open: boolean) => void;  // ダイアログの開閉状態を変更する関数
-    onConfirm: () => void;  // 削除確認時に呼び出される関数
+    isOpen: boolean;
+    onOpenChange: (open: boolean) => void;
+    onConfirm: () => void;
 }
 
-// プリセット削除確認用のダイアログコンポーネント
 const DeleteConfirmDialog: React.FC<DeleteConfirmDialogProps> = ({
     isOpen,
     onOpenChange,
@@ -30,15 +28,23 @@ const DeleteConfirmDialog: React.FC<DeleteConfirmDialogProps> = ({
             <DialogDescription>
                 このプリセットを削除してもよろしいですか？この操作は取り消せません。
             </DialogDescription>
-            <DialogFooter>
-                {/* キャンセルボタン */}
-                <Button variant="outline" onClick={() => onOpenChange(false)}>
-                    キャンセル
-                </Button>
-                {/* 削除確認ボタン */}
-                <Button variant="destructive" onClick={onConfirm}>
-                    削除
-                </Button>
+            <DialogFooter className="sm:justify-start">
+                <div className="w-full flex justify-between gap-4">
+                    <Button
+                        variant="outline"
+                        onClick={() => onOpenChange(false)}
+                        className="flex-1"
+                    >
+                        キャンセル
+                    </Button>
+                    <Button
+                        variant="destructive"
+                        onClick={onConfirm}
+                        className="flex-1"
+                    >
+                        削除
+                    </Button>
+                </div>
             </DialogFooter>
         </DialogContent>
     </Dialog>

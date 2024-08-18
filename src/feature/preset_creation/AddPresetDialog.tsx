@@ -10,8 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Preset } from '@/types/preset';
 import ColorRadioGroup from './ColorRadioGroup';
-import TimeSelectionDrawer from './TimeSelect';
 import { fetchPresets } from '@/lib/api';
+import TimeSelectionDrawer from './TimeSelectionDrawer';
 
 interface AddPresetDialogProps {
     isOpen: boolean;

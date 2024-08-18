@@ -7,8 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Preset } from '@/types/preset';
 import { fetchPreset, updatePreset, deletePreset, fetchPresets } from '@/lib/api';
 import ColorRadioGroup from '../ColorRadioGroup';
-import TimeSelectionDrawer from '../TimeSelect';
 import DeleteConfirmDialog from '../DeleteConfirmDialog';
+import TimeSelectionDrawer from '../TimeSelectionDrawer';
 
 interface PresetDetailPageProps {
     presetId: string;
