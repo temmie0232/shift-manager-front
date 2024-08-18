@@ -1,11 +1,10 @@
+import ShiftRequestPage from '@/feature/shift_request/ShiftRequestPage'
 import React from 'react'
 
-const page = () => {
+const Page = () => {
     return (
-        <div>
-            shift_request
-        </div>
+        <ShiftRequestPage />
     )
 }
 
-export default page
+export default Page
