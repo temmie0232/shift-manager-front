@@ -88,8 +88,7 @@ const PresetCreationPage = () => {
 
     return (
         <div className="p-4">
-            <h1 className="text-2xl font-bold mb-4">プリセット作成</h1>
-            <div className="flex flex-col mb-16">
+            <div className="flex flex-col mt-2 mb-16">
                 {presets.map((preset) => (
                     <PresetCard
                         key={preset.id}

@@ -11,7 +11,10 @@ interface PresetCardProps {
 }
 
 const PresetCard: React.FC<PresetCardProps> = ({ preset, onClick, onDelete }) => (
-    <Card className="relative mb-4" onClick={onClick}>
+    <Card
+        className="relative mb-4 transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-95 cursor-pointer"
+        onClick={onClick}
+    >
         <CardContent className="p-4">
             <div className="flex items-center mb-2">
                 <div className="w-4 h-4 rounded-full mr-2" style={{ backgroundColor: preset.color }}></div>
@@ -19,7 +22,7 @@ const PresetCard: React.FC<PresetCardProps> = ({ preset, onClick, onDelete }) =>
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute top-2 right-2"
+                    className="absolute top-2 right-2 transition-transform duration-300 ease-in-out hover:scale-110 active:scale-90"
                     onClick={(e) => {
                         e.stopPropagation();
                         onDelete();

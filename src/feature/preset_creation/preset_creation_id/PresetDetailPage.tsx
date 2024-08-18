@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Preset } from '@/types/preset';
-import { fetchPreset, updatePreset, deletePreset } from '@/lib/api';
+import { fetchPreset, updatePreset, deletePreset, fetchPresets } from '@/lib/api';
 import ColorRadioGroup from '../ColorRadioGroup';
 import TimeSelectionDrawer from '../TimeSelect';
+import DeleteConfirmDialog from '../DeleteConfirmDialog';
 
 interface PresetDetailPageProps {
     presetId: string;
@@ -20,6 +21,8 @@ const PresetDetailPage: React.FC<PresetDetailPageProps> = ({ presetId }) => {
     const [isTimeDrawerOpen, setIsTimeDrawerOpen] = useState(false);
     const [timeType, setTimeType] = useState<'start' | 'end'>('start');
     const [titleError, setTitleError] = useState<string | null>(null);
+    const [timeError, setTimeError] = useState<string | null>(null);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
@@ -39,12 +42,31 @@ const PresetDetailPage: React.FC<PresetDetailPageProps> = ({ presetId }) => {
         loadPreset();
     }, [presetId]);
 
+    const checkTimeOverlap = async (startTime: string, endTime: string) => {
+        const presets = await fetchPresets();
+        return presets.some(p =>
+            p.id !== presetId && p.startTime === startTime && p.endTime === endTime
+        );
+    };
+
     const handleSave = async () => {
         if (preset) {
             if (preset.title.trim() === '') {
                 setTitleError('シフト名を入力してください');
                 return;
             }
+
+            if (!preset.startTime || !preset.endTime) {
+                setTimeError('開始時間と終了時間を設定してください');
+                return;
+            }
+
+            const overlap = await checkTimeOverlap(preset.startTime, preset.endTime);
+            if (overlap) {
+                setTimeError('すでにその時間帯は登録されています');
+                return;
+            }
+
             try {
                 await updatePreset(preset);
                 router.push('/preset_creation');
@@ -55,7 +77,7 @@ const PresetDetailPage: React.FC<PresetDetailPageProps> = ({ presetId }) => {
         }
     };
 
-    const handleDelete = async () => {
+    const handleDeleteConfirm = async () => {
         if (preset) {
             try {
                 await deletePreset(preset.id);
@@ -71,12 +93,22 @@ const PresetDetailPage: React.FC<PresetDetailPageProps> = ({ presetId }) => {
         router.push('/preset_creation');
     };
 
-    const handleTimeSelection = (time: string) => {
+    const handleTimeSelection = async (time: string) => {
         if (preset) {
-            setPreset({
+            const updatedPreset = {
                 ...preset,
                 [timeType === 'start' ? 'startTime' : 'endTime']: time
-            });
+            };
+            setPreset(updatedPreset);
+
+            if (updatedPreset.startTime && updatedPreset.endTime) {
+                const overlap = await checkTimeOverlap(updatedPreset.startTime, updatedPreset.endTime);
+                if (overlap) {
+                    setTimeError('すでにその時間帯は登録されています');
+                } else {
+                    setTimeError(null);
+                }
+            }
         }
         setIsTimeDrawerOpen(false);
     };
@@ -148,6 +180,7 @@ const PresetDetailPage: React.FC<PresetDetailPageProps> = ({ presetId }) => {
                                 <span>終了時間</span>
                                 <span>{preset.endTime || '未設定'}</span>
                             </Button>
+                            {timeError && <p className="text-red-500 text-sm">{timeError}</p>}
                         </div>
                     </div>
                 </div>
@@ -155,7 +188,7 @@ const PresetDetailPage: React.FC<PresetDetailPageProps> = ({ presetId }) => {
             <div className="p-3 bg-white">
                 <div className="grid grid-cols-2 gap-3 mb-3">
                     <Button onClick={handleSave} className="w-full">保存</Button>
-                    <Button onClick={handleDelete} variant="destructive" className="w-full">削除</Button>
+                    <Button onClick={() => setIsDeleteDialogOpen(true)} variant="destructive" className="w-full">削除</Button>
                 </div>
                 <Button onClick={handleCancel} variant="outline" className="w-full">キャンセル</Button>
             </div>
@@ -164,6 +197,11 @@ const PresetDetailPage: React.FC<PresetDetailPageProps> = ({ presetId }) => {
                 onClose={() => setIsTimeDrawerOpen(false)}
                 onSelect={handleTimeSelection}
                 type={timeType}
+            />
+            <DeleteConfirmDialog
+                isOpen={isDeleteDialogOpen}
+                onOpenChange={setIsDeleteDialogOpen}
+                onConfirm={handleDeleteConfirm}
             />
         </div>
     );

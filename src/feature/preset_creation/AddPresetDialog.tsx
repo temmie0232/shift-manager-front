@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Preset } from '@/types/preset';
 import ColorRadioGroup from './ColorRadioGroup';
 import TimeSelectionDrawer from './TimeSelect';
+import { fetchPresets } from '@/lib/api';
 
 interface AddPresetDialogProps {
     isOpen: boolean;
@@ -30,13 +31,25 @@ const AddPresetDialog: React.FC<AddPresetDialogProps> = ({
     const [isTimeDrawerOpen, setIsTimeDrawerOpen] = useState(false);
     const [timeType, setTimeType] = useState<'start' | 'end'>('start');
     const [titleError, setTitleError] = useState<string | null>(null);
+    const [timeError, setTimeError] = useState<string | null>(null);
 
-    const handleTimeSelection = (time: string) => {
-        setNewPreset({
+    const handleTimeSelection = async (time: string) => {
+        const updatedPreset = {
             ...newPreset,
             [timeType === 'start' ? 'startTime' : 'endTime']: time
-        });
+        };
+        setNewPreset(updatedPreset);
         setIsTimeDrawerOpen(false);
+
+        // 時間の重複チェック
+        if (updatedPreset.startTime && updatedPreset.endTime) {
+            const overlap = await checkTimeOverlap(updatedPreset.startTime, updatedPreset.endTime);
+            if (overlap) {
+                setTimeError('すでにその時間帯は登録されています');
+            } else {
+                setTimeError(null);
+            }
+        }
     };
 
     const openTimeDrawer = (type: 'start' | 'end') => {
@@ -54,12 +67,31 @@ const AddPresetDialog: React.FC<AddPresetDialogProps> = ({
         }
     };
 
-    const handleAdd = () => {
+    const checkTimeOverlap = async (startTime: string, endTime: string) => {
+        const presets = await fetchPresets();
+        return presets.some(preset =>
+            preset.startTime === startTime && preset.endTime === endTime
+        );
+    };
+
+    const handleAdd = async () => {
         if (newPreset.title.trim() === '') {
             setTitleError('シフト名を入力してください');
-        } else {
-            onAdd();
+            return;
         }
+
+        if (!newPreset.startTime || !newPreset.endTime) {
+            setTimeError('開始時間と終了時間を設定してください');
+            return;
+        }
+
+        const overlap = await checkTimeOverlap(newPreset.startTime, newPreset.endTime);
+        if (overlap) {
+            setTimeError('すでにその時間帯は登録されています');
+            return;
+        }
+
+        onAdd();
     };
 
     return (
@@ -112,6 +144,7 @@ const AddPresetDialog: React.FC<AddPresetDialogProps> = ({
                                 <span>終了時間</span>
                                 <span>{newPreset.endTime || '未設定'}</span>
                             </Button>
+                            {timeError && <p className="text-red-500 text-sm">{timeError}</p>}
                         </div>
                     </div>
                 </div>
