@@ -117,3 +117,15 @@ export async function deletePreset(id: string): Promise<void> {
         throw new Error(errorData.message || 'Failed to delete preset');
     }
 }
+
+export async function fetchPreset(id: string): Promise<Preset> {
+    const response = await fetch(`${apiUrl}/api/presets/${id}`, {
+        headers: getHeaders(),
+        credentials: 'include',
+    });
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch preset');
+    }
+    return response.json();
+}

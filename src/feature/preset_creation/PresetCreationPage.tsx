@@ -7,6 +7,8 @@ import AddPresetDialog from './AddPresetDialog';
 import DeleteConfirmDialog from './DeleteConfirmDialog';
 import { Preset } from '@/types/preset';
 import { fetchPresets, createPreset, deletePreset } from '@/lib/api';
+import { useRouter } from 'next/navigation';
+
 
 const PresetCreationPage = () => {
     const [presets, setPresets] = useState<Preset[]>([]);
@@ -22,6 +24,7 @@ const PresetCreationPage = () => {
 
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const router = useRouter();
 
     useEffect(() => {
         const loadPresets = async () => {
@@ -41,7 +44,7 @@ const PresetCreationPage = () => {
     }, []);
 
     const handlePresetClick = (id: string) => {
-        console.log(`Navigating to preset ${id} details`);
+        router.push(`/preset_creation/${id}`);
     };
 
     const handleAddPreset = async () => {
