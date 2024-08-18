@@ -4,6 +4,16 @@ import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter } from "@/components/ui/drawer";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Preset } from '@/types/preset';
 import { fetchPresets } from '@/lib/api';
 import { format, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from 'date-fns';
@@ -15,6 +25,8 @@ const ShiftRequestPage: React.FC = () => {
     const [selectedPreset, setSelectedPreset] = useState<Preset | null>(null);
     const [shiftData, setShiftData] = useState<{ [key: string]: { color: string } }>({});
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+    const [confirmDialogContent, setConfirmDialogContent] = useState({ title: '', description: '', action: () => { } });
     const router = useRouter();
 
     useEffect(() => {
@@ -62,17 +74,14 @@ const ShiftRequestPage: React.FC = () => {
 
             const selectedDays = daysInMonth.filter(day => getDay(day) === weekday);
 
-            // Check if all days of this weekday are already selected
             const allSelected = selectedDays.every(day =>
                 shiftData[format(day, 'yyyy-MM-dd')]?.color === selectedPreset.color
             );
 
             setSelectedDates(prev => {
                 if (allSelected) {
-                    // If all are selected, remove them
                     return prev.filter(date => !selectedDays.some(day => isSameDay(day, date)));
                 } else {
-                    // If not all are selected, add the missing ones
                     const newDates = selectedDays.filter(day =>
                         !prev.some(date => isSameDay(date, day))
                     );
@@ -105,19 +114,42 @@ const ShiftRequestPage: React.FC = () => {
     };
 
     const handleCancel = () => {
-        setIsDrawerOpen(false);
+        setConfirmDialogContent({
+            title: '変更を破棄',
+            description: '現在加えた変更が破棄され、以前の保存地点まで作業内容が戻ってしまいますがよろしいですか？',
+            action: () => {
+                // TODO: 以前の保存地点までの作業内容を復元するロジックを実装
+                setIsDrawerOpen(false);
+            }
+        });
+        setIsConfirmDialogOpen(true);
     };
 
     const handleReset = () => {
-        setShiftData({});
-        setSelectedDates([]);
-        setSelectedPreset(null);
-        setIsDrawerOpen(false);
+        setConfirmDialogContent({
+            title: 'シフトをリセット',
+            description: 'シフトがリセットされて0の状態になってしまいますがよろしいですか？',
+            action: () => {
+                setShiftData({});
+                setSelectedDates([]);
+                setSelectedPreset(null);
+                setIsDrawerOpen(false);
+            }
+        });
+        setIsConfirmDialogOpen(true);
     };
 
     const handleSubmit = () => {
-        console.log('Submitting shift data:', shiftData);
-        setIsDrawerOpen(false);
+        setConfirmDialogContent({
+            title: 'シフト希望を提出',
+            description: '現在の内容でシフトを提出します。よろしいですか？',
+            action: () => {
+                console.log('Submitting shift data:', shiftData);
+                setIsDrawerOpen(false);
+                // TODO: シフト提出の処理を実装
+            }
+        });
+        setIsConfirmDialogOpen(true);
     };
 
     return (
@@ -186,6 +218,25 @@ const ShiftRequestPage: React.FC = () => {
                     </DrawerFooter>
                 </DrawerContent>
             </Drawer>
+            <AlertDialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>{confirmDialogContent.title}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {confirmDialogContent.description}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>キャンセル</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => {
+                            confirmDialogContent.action();
+                            setIsConfirmDialogOpen(false);
+                        }}>
+                            確認
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 };
