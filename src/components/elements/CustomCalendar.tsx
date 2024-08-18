@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, format, isSameMonth, addMonths, subMonths, isSameDay } from 'date-fns';
+import React, { useState, useEffect } from 'react';
+import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, format, isSameMonth, addMonths, isBefore, isAfter, startOfDay } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -13,14 +13,28 @@ interface CustomCalendarProps {
 }
 
 const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDates, onDateSelect, shiftData, className }) => {
-    const [currentMonth, setCurrentMonth] = useState(addMonths(new Date(), 1));
+    const today = startOfDay(new Date());
+    const nextMonth = startOfMonth(addMonths(today, 1));
+    const [currentMonth, setCurrentMonth] = useState(nextMonth);
+    const [isNextMonthDisabled, setIsNextMonthDisabled] = useState(false);
+    const [isPrevMonthDisabled, setIsPrevMonthDisabled] = useState(true);
 
-    const nextMonth = () => {
-        setCurrentMonth(addMonths(currentMonth, 1));
+    useEffect(() => {
+        const twoMonthsLater = addMonths(nextMonth, 1);
+        setIsNextMonthDisabled(isSameMonth(currentMonth, twoMonthsLater));
+        setIsPrevMonthDisabled(isSameMonth(currentMonth, nextMonth));
+    }, [currentMonth, nextMonth]);
+
+    const handleNextMonth = () => {
+        if (!isNextMonthDisabled) {
+            setCurrentMonth(addMonths(currentMonth, 1));
+        }
     };
 
-    const prevMonth = () => {
-        setCurrentMonth(subMonths(currentMonth, 1));
+    const handlePrevMonth = () => {
+        if (!isPrevMonthDisabled) {
+            setCurrentMonth(addMonths(currentMonth, -1));
+        }
     };
 
     const startMonth = startOfMonth(currentMonth);
@@ -32,17 +46,26 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDates, onDateSe
 
     const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
 
+    const isDateSelectable = (date: Date) => {
+        const startOfDate = startOfDay(date);
+        return (
+            isSameMonth(startOfDate, currentMonth) &&
+            (isSameMonth(startOfDate, nextMonth) || isSameMonth(startOfDate, addMonths(nextMonth, 1))) &&
+            !isBefore(startOfDate, nextMonth)
+        );
+    };
+
     return (
         <div className={cn("bg-white rounded-lg shadow", className)}>
             <div className="p-4">
                 <div className="flex justify-between items-center mb-4">
-                    <Button onClick={prevMonth} variant="ghost" size="icon">
+                    <Button onClick={handlePrevMonth} variant="ghost" size="icon" disabled={isPrevMonthDisabled}>
                         <ChevronLeft className="h-4 w-4" />
                     </Button>
                     <div className="text-center font-bold">
                         {format(currentMonth, 'yyyy年M月', { locale: ja })}
                     </div>
-                    <Button onClick={nextMonth} variant="ghost" size="icon">
+                    <Button onClick={handleNextMonth} variant="ghost" size="icon" disabled={isNextMonthDisabled}>
                         <ChevronRight className="h-4 w-4" />
                     </Button>
                 </div>
@@ -56,17 +79,20 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDates, onDateSe
                         const dateKey = format(day, 'yyyy-MM-dd');
                         const shiftInfo = shiftData[dateKey];
                         const borderColor = shiftInfo ? shiftInfo.color : 'transparent';
-                        const textColor = isSameMonth(day, currentMonth) ? 'text-gray-900' : 'text-gray-400';
+                        const isSelectable = isDateSelectable(day);
+                        const textColor = isSelectable ? 'text-gray-900' : 'text-gray-400';
 
                         return (
                             <button
                                 key={day.toISOString()}
-                                onClick={() => onDateSelect(day)}
-                                className={`p-2 ${textColor} hover:bg-gray-100 transition-all rounded-md text-sm relative`}
+                                onClick={() => isSelectable && onDateSelect(day)}
+                                className={`p-2 ${textColor} transition-all rounded-md text-sm relative ${isSelectable ? 'hover:bg-gray-100' : 'cursor-not-allowed'}`}
                                 style={{
-                                    border: `4px solid ${borderColor}`, // 縁線を5pxに変更
-                                    backgroundColor: 'white'
+                                    border: `4px solid ${borderColor}`,
+                                    backgroundColor: 'white',
+                                    opacity: isSelectable ? 1 : 0.5
                                 }}
+                                disabled={!isSelectable}
                             >
                                 {format(day, 'd')}
                             </button>

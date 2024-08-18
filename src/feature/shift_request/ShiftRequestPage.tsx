@@ -92,10 +92,12 @@ const ShiftRequestPage: React.FC = () => {
                             {presets.map((preset) => (
                                 <div key={preset.id} className="relative w-4/5">
                                     <div
-                                        className={`absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-black transition-opacity duration-300 ${selectedPreset?.id === preset.id ? 'opacity-100' : 'opacity-0'
+                                        className={`absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-black transition-opacity duration-300 flex items-center justify-center ${selectedPreset?.id === preset.id ? 'opacity-100' : 'opacity-0'
                                             }`}
-                                        style={{ left: '-20px' }}
-                                    />
+                                        style={{ left: '-24px' }}
+                                    >
+                                        <div className="w-2 h-2 rounded-full bg-white" />
+                                    </div>
                                     <Button
                                         onClick={() => handlePresetClick(preset)}
                                         className="w-full justify-center transition-all duration-200 ease-in-out hover:scale-[1.02] overflow-hidden"
@@ -105,7 +107,7 @@ const ShiftRequestPage: React.FC = () => {
                                             border: `4px solid ${preset.color}`
                                         }}
                                     >
-                                        <span className="mr-4">{preset.title}</span>
+                                        <span className="mr-3 truncate">{preset.title}</span>
                                         <span>[ {preset.startTime} - {preset.endTime} ]</span>
                                     </Button>
                                 </div>
