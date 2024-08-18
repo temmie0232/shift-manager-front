@@ -26,7 +26,7 @@ const ColorRadioGroup: React.FC<ColorRadioGroupProps> = ({ selectedColor, onChan
                     <RadioGroupItem value={color.value} id={color.value} className="sr-only" />
                     <Label
                         htmlFor={color.value}
-                        className="w-7 h-7 rounded-full cursor-pointer flex items-center justify-center transition-all duration-300 ease-in-out transform hover:scale-110"
+                        className="w-6 h-6 rounded-full cursor-pointer flex items-center justify-center transition-all duration-300 ease-in-out transform hover:scale-110"
                         style={{ backgroundColor: color.value }}
                     >
                         {selectedColor === color.value && (

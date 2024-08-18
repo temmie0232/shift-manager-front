@@ -1,21 +1,24 @@
 import React from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "@/components/ui/drawer";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-interface TimeSelectProps {
-    value: string;
-    onChange: (value: string) => void;
-    isStartTime: boolean;
+interface TimeSelectionDrawerProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSelect: (time: string) => void;
+    type: 'start' | 'end';
 }
 
-const TimeSelect: React.FC<TimeSelectProps> = ({ value, onChange, isStartTime }) => {
+const TimeSelectionDrawer: React.FC<TimeSelectionDrawerProps> = ({ isOpen, onClose, onSelect, type }) => {
     const generateTimeOptions = () => {
         const options = [];
-        const start = isStartTime ? 7 : 11;
-        const end = isStartTime ? 19 : 22;
+        const start = type === 'start' ? 7 : 11;
+        const end = type === 'start' ? 19 : 22;
 
         for (let hour = start; hour <= end; hour++) {
             options.push(`${hour.toString().padStart(2, '0')}:00`);
-            if (isStartTime && hour === 8) {
+            if (type === 'start' && hour === 8) {
                 options.push('08:30');
             }
         }
@@ -23,19 +26,30 @@ const TimeSelect: React.FC<TimeSelectProps> = ({ value, onChange, isStartTime })
     };
 
     return (
-        <Select value={value} onValueChange={onChange}>
-            <SelectTrigger className="w-full">
-                <SelectValue placeholder={isStartTime ? "開始時間を選択" : "終了時間を選択"} />
-            </SelectTrigger>
-            <SelectContent>
-                {generateTimeOptions().map((time) => (
-                    <SelectItem key={time} value={time}>
-                        {time}
-                    </SelectItem>
-                ))}
-            </SelectContent>
-        </Select>
+        <Drawer open={isOpen} onClose={onClose}>
+            <DrawerContent>
+                <DrawerHeader>
+                    <DrawerTitle>{type === 'start' ? '開始時間' : '終了時間'}を選択</DrawerTitle>
+                </DrawerHeader>
+                <ScrollArea className="h-[300px] p-4">
+                    <div className="grid grid-cols-3 gap-2">
+                        {generateTimeOptions().map((time) => (
+                            <Button
+                                key={time}
+                                variant="outline"
+                                onClick={() => onSelect(time)}
+                            >
+                                {time}
+                            </Button>
+                        ))}
+                    </div>
+                </ScrollArea>
+                <DrawerFooter>
+                    <Button variant="outline" onClick={onClose}>キャンセル</Button>
+                </DrawerFooter>
+            </DrawerContent>
+        </Drawer>
     );
 };
 
-export default TimeSelect;
+export default TimeSelectionDrawer;

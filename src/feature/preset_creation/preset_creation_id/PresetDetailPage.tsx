@@ -6,8 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Preset } from '@/types/preset';
 import { fetchPreset, updatePreset, deletePreset } from '@/lib/api';
-import TimeSelect from '../TimeSelect';
 import ColorRadioGroup from '../ColorRadioGroup';
+import TimeSelectionDrawer from '../TimeSelect';
 
 interface PresetDetailPageProps {
     presetId: string;
@@ -17,6 +17,8 @@ const PresetDetailPage: React.FC<PresetDetailPageProps> = ({ presetId }) => {
     const [preset, setPreset] = useState<Preset | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isTimeDrawerOpen, setIsTimeDrawerOpen] = useState(false);
+    const [timeType, setTimeType] = useState<'start' | 'end'>('start');
     const router = useRouter();
 
     useEffect(() => {
@@ -64,6 +66,21 @@ const PresetDetailPage: React.FC<PresetDetailPageProps> = ({ presetId }) => {
         router.push('/preset_creation');
     };
 
+    const handleTimeSelection = (time: string) => {
+        if (preset) {
+            setPreset({
+                ...preset,
+                [timeType === 'start' ? 'startTime' : 'endTime']: time
+            });
+        }
+        setIsTimeDrawerOpen(false);
+    };
+
+    const openTimeDrawer = (type: 'start' | 'end') => {
+        setTimeType(type);
+        setIsTimeDrawerOpen(true);
+    };
+
     if (isLoading) {
         return <div className="p-4">読み込み中...</div>;
     }
@@ -78,9 +95,8 @@ const PresetDetailPage: React.FC<PresetDetailPageProps> = ({ presetId }) => {
 
     return (
         <div className="flex flex-col h-[calc(100vh-8rem)] overflow-hidden">
-            <div className="flex-grow overflow-y-auto p-4">
-                <h1 className="text-2xl font-bold mb-4">プリセット詳細</h1>
-                <div className="space-y-4">
+            <div className="flex-grow overflow-y-auto p-4 mt-4">
+                <div className="space-y-8">
                     <div>
                         <Label htmlFor="title">シフト名</Label>
                         <Input
@@ -97,30 +113,41 @@ const PresetDetailPage: React.FC<PresetDetailPageProps> = ({ presetId }) => {
                         />
                     </div>
                     <div>
-                        <Label htmlFor="startTime">開始時間</Label>
-                        <TimeSelect
-                            value={preset.startTime}
-                            onChange={(startTime) => setPreset({ ...preset, startTime })}
-                            isStartTime={true}
-                        />
-                    </div>
-                    <div>
-                        <Label htmlFor="endTime">終了時間</Label>
-                        <TimeSelect
-                            value={preset.endTime}
-                            onChange={(endTime) => setPreset({ ...preset, endTime })}
-                            isStartTime={false}
-                        />
+                        <Label>勤務時間</Label>
+                        <div className="space-y-2 mt-2">
+                            <Button
+                                onClick={() => openTimeDrawer('start')}
+                                className="w-full justify-between"
+                                variant="outline"
+                            >
+                                <span>開始時間</span>
+                                <span>{preset.startTime || '未設定'}</span>
+                            </Button>
+                            <Button
+                                onClick={() => openTimeDrawer('end')}
+                                className="w-full justify-between"
+                                variant="outline"
+                            >
+                                <span>終了時間</span>
+                                <span>{preset.endTime || '未設定'}</span>
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div className="p-3 bg-white ">
+            <div className="p-3 bg-white">
                 <div className="grid grid-cols-2 gap-3 mb-3">
                     <Button onClick={handleSave} className="w-full">保存</Button>
                     <Button onClick={handleDelete} variant="destructive" className="w-full">削除</Button>
                 </div>
                 <Button onClick={handleCancel} variant="outline" className="w-full">キャンセル</Button>
             </div>
+            <TimeSelectionDrawer
+                isOpen={isTimeDrawerOpen}
+                onClose={() => setIsTimeDrawerOpen(false)}
+                onSelect={handleTimeSelection}
+                type={timeType}
+            />
         </div>
     );
 };
