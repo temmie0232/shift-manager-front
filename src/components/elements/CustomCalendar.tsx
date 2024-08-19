@@ -9,7 +9,7 @@ interface CustomCalendarProps {
     selectedDates: Date[];
     onDateSelect: (date: Date) => void;
     onWeekdaySelect: (weekday: number) => void;
-    shiftData: { [key: string]: { color: string } };
+    shiftData: { [key: string]: { startTime: string, endTime: string, color?: string } };
     className?: string;
 }
 
@@ -56,6 +56,17 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDates, onDateSe
         );
     };
 
+    const getLighterColor = (color: string, factor: number = 0.9) => {  // factorを0.9に変更
+        const hex = color.replace('#', '');
+        const r = parseInt(hex.substr(0, 2), 16);
+        const g = parseInt(hex.substr(2, 2), 16);
+        const b = parseInt(hex.substr(4, 2), 16);
+        const lighterR = Math.round(r + (255 - r) * factor);
+        const lighterG = Math.round(g + (255 - g) * factor);
+        const lighterB = Math.round(b + (255 - b) * factor);
+        return `rgb(${lighterR}, ${lighterG}, ${lighterB})`;
+    };
+
     return (
         <div className={cn("bg-white rounded-lg shadow", className)}>
             <div className="p-4">
@@ -83,9 +94,9 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDates, onDateSe
                     {days.map(day => {
                         const dateKey = format(day, 'yyyy-MM-dd');
                         const shiftInfo = shiftData[dateKey];
-                        const borderColor = shiftInfo ? shiftInfo.color : 'transparent';
                         const isSelectable = isDateSelectable(day);
                         const textColor = isSelectable ? 'text-gray-900' : 'text-gray-400';
+                        const backgroundColor = shiftInfo && shiftInfo.color ? getLighterColor(shiftInfo.color) : 'white';
 
                         return (
                             <button
@@ -93,13 +104,23 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDates, onDateSe
                                 onClick={() => isSelectable && onDateSelect(day)}
                                 className={`p-2 ${textColor} transition-all rounded-md text-sm relative ${isSelectable ? 'hover:bg-gray-100' : 'cursor-not-allowed'}`}
                                 style={{
-                                    border: `4px solid ${borderColor}`,
-                                    backgroundColor: 'white',
-                                    opacity: isSelectable ? 1 : 0.5
+                                    backgroundColor: backgroundColor,
+                                    opacity: isSelectable ? 1 : 0.5,
+                                    // border プロパティを削除
                                 }}
                                 disabled={!isSelectable}
                             >
-                                {format(day, 'd')}
+                                <div>{format(day, 'd')}</div>
+                                {shiftInfo && (
+                                    <>
+                                        <div className="my-1 h-px bg-gray-300"></div>
+                                        <div className="text-xs flex flex-col items-center">
+                                            <div>{shiftInfo.startTime}</div>
+                                            <div className="h-2 w-px bg-gray-400"></div>
+                                            <div>{shiftInfo.endTime}</div>
+                                        </div>
+                                    </>
+                                )}
                             </button>
                         );
                     })}

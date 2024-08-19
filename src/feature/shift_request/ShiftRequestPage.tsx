@@ -14,31 +14,56 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Preset } from '@/types/preset';
-import { fetchPresets } from '@/lib/api';
+import { fetchPresets, saveTemporaryShiftRequest, loadTemporaryShiftRequest, submitShiftRequest } from '@/lib/api';
 import { format, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from 'date-fns';
 import CustomCalendar from '@/components/elements/CustomCalendar';
+
+interface ShiftInfo {
+    startTime: string;
+    endTime: string;
+    color?: string;
+}
 
 const ShiftRequestPage: React.FC = () => {
     const [selectedDates, setSelectedDates] = useState<Date[]>([]);
     const [presets, setPresets] = useState<Preset[]>([]);
     const [selectedPreset, setSelectedPreset] = useState<Preset | null>(null);
-    const [shiftData, setShiftData] = useState<{ [key: string]: { color: string } }>({});
+    const [shiftData, setShiftData] = useState<{ [key: string]: ShiftInfo }>({});
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
     const [confirmDialogContent, setConfirmDialogContent] = useState({ title: '', description: '', action: () => { } });
+    const [minWorkHours, setMinWorkHours] = useState<string>('');
+    const [maxWorkHours, setMaxWorkHours] = useState<string>('');
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const router = useRouter();
 
     useEffect(() => {
-        const loadPresets = async () => {
+        const loadData = async () => {
             try {
                 const fetchedPresets = await fetchPresets();
                 setPresets(fetchedPresets);
+
+                const currentDate = new Date();
+                const nextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+                const tempShiftRequest = await loadTemporaryShiftRequest(format(nextMonth, 'yyyy-MM-dd'));
+                if (tempShiftRequest) {
+                    setShiftData(tempShiftRequest.shift_data);
+                    setMinWorkHours(tempShiftRequest.min_work_hours?.toString() || '');
+                    setMaxWorkHours(tempShiftRequest.max_work_hours?.toString() || '');
+                    setSelectedDates(Object.keys(tempShiftRequest.shift_data).map(dateStr => new Date(dateStr)));
+                }
             } catch (error) {
-                console.error('Failed to load presets:', error);
+                console.error('Failed to load data:', error);
+                setError('データの読み込みに失敗しました。もう一度お試しください。');
+            } finally {
+                setIsLoading(false);
             }
         };
-        loadPresets();
+        loadData();
     }, []);
 
     const handleDateSelect = (date: Date) => {
@@ -57,7 +82,11 @@ const ShiftRequestPage: React.FC = () => {
                 if (newShiftData[dateString]) {
                     delete newShiftData[dateString];
                 } else {
-                    newShiftData[dateString] = { color: selectedPreset.color };
+                    newShiftData[dateString] = {
+                        startTime: selectedPreset.startTime,
+                        endTime: selectedPreset.endTime,
+                        color: selectedPreset.color
+                    };
                 }
                 return newShiftData;
             });
@@ -74,9 +103,11 @@ const ShiftRequestPage: React.FC = () => {
 
             const selectedDays = daysInMonth.filter(day => getDay(day) === weekday);
 
-            const allSelected = selectedDays.every(day =>
-                shiftData[format(day, 'yyyy-MM-dd')]?.color === selectedPreset.color
-            );
+            const allSelected = selectedDays.every(day => {
+                const dateString = format(day, 'yyyy-MM-dd');
+                return shiftData[dateString]?.startTime === selectedPreset.startTime
+                    && shiftData[dateString]?.endTime === selectedPreset.endTime;
+            });
 
             setSelectedDates(prev => {
                 if (allSelected) {
@@ -96,30 +127,64 @@ const ShiftRequestPage: React.FC = () => {
                     if (allSelected) {
                         delete newShiftData[dateString];
                     } else {
-                        newShiftData[dateString] = { color: selectedPreset.color };
+                        newShiftData[dateString] = {
+                            startTime: selectedPreset.startTime,
+                            endTime: selectedPreset.endTime,
+                            color: selectedPreset.color
+                        };
                     }
                 });
                 return newShiftData;
             });
         }
     };
-
     const handlePresetClick = (preset: Preset) => {
         setSelectedPreset(preset);
     };
 
-    const handleSave = () => {
-        console.log('Saving shift data:', shiftData);
-        setIsDrawerOpen(false);
+    const handleSave = async () => {
+        try {
+            const currentDate = new Date();
+            const nextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+            await saveTemporaryShiftRequest(
+                format(nextMonth, 'yyyy-MM-dd'),
+                shiftData,
+                parseFloat(minWorkHours),
+                parseFloat(maxWorkHours)
+            );
+            console.log('Temporary shift data saved:', shiftData);
+            setIsDrawerOpen(false);
+        } catch (error) {
+            console.error('Failed to save temporary shift data:', error);
+            setError('一時保存に失敗しました。もう一度お試しください。');
+        }
     };
 
-    const handleCancel = () => {
+    const handleCancel = async () => {
         setConfirmDialogContent({
             title: '変更を破棄',
             description: '現在加えた変更が破棄され、以前の保存地点まで作業内容が戻ってしまいますがよろしいですか？',
-            action: () => {
-                // TODO: 以前の保存地点までの作業内容を復元するロジックを実装
-                setIsDrawerOpen(false);
+            action: async () => {
+                try {
+                    const currentDate = new Date();
+                    const nextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+                    const tempShiftRequest = await loadTemporaryShiftRequest(format(nextMonth, 'yyyy-MM-dd'));
+                    if (tempShiftRequest) {
+                        setShiftData(tempShiftRequest.shift_data);
+                        setMinWorkHours(tempShiftRequest.min_work_hours?.toString() || '');
+                        setMaxWorkHours(tempShiftRequest.max_work_hours?.toString() || '');
+                        setSelectedDates(Object.keys(tempShiftRequest.shift_data).map(dateStr => new Date(dateStr)));
+                    } else {
+                        setShiftData({});
+                        setSelectedDates([]);
+                        setMinWorkHours('');
+                        setMaxWorkHours('');
+                    }
+                    setIsDrawerOpen(false);
+                } catch (error) {
+                    console.error('Failed to load temporary shift data:', error);
+                    setError('前回の保存データの読み込みに失敗しました。もう一度お試しください。');
+                }
             }
         });
         setIsConfirmDialogOpen(true);
@@ -133,24 +198,47 @@ const ShiftRequestPage: React.FC = () => {
                 setShiftData({});
                 setSelectedDates([]);
                 setSelectedPreset(null);
+                setMinWorkHours('');
+                setMaxWorkHours('');
                 setIsDrawerOpen(false);
             }
         });
         setIsConfirmDialogOpen(true);
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         setConfirmDialogContent({
             title: 'シフト希望を提出',
             description: '現在の内容でシフトを提出します。よろしいですか？',
-            action: () => {
-                console.log('Submitting shift data:', shiftData);
-                setIsDrawerOpen(false);
-                // TODO: シフト提出の処理を実装
+            action: async () => {
+                try {
+                    const currentDate = new Date();
+                    const nextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+                    await submitShiftRequest(
+                        format(nextMonth, 'yyyy-MM-dd'),
+                        shiftData,
+                        parseFloat(minWorkHours),
+                        parseFloat(maxWorkHours)
+                    );
+                    console.log('Shift request submitted:', shiftData);
+                    setIsDrawerOpen(false);
+                    // TODO: Show success message and maybe redirect
+                } catch (error) {
+                    console.error('Failed to submit shift request:', error);
+                    setError('シフト希望の提出に失敗しました。もう一度お試しください。');
+                }
             }
         });
         setIsConfirmDialogOpen(true);
     };
+
+    if (isLoading) {
+        return <div className="p-4">読み込み中...</div>;
+    }
+
+    if (error) {
+        return <div className="p-4 text-red-500">{error}</div>;
+    }
 
     return (
         <div className="flex flex-col h-[calc(100vh-8rem)] overflow-hidden">
@@ -226,12 +314,43 @@ const ShiftRequestPage: React.FC = () => {
                             {confirmDialogContent.description}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
+                    {confirmDialogContent.title === 'シフト希望を提出' && (
+                        <div className="space-y-4 py-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="min-work-hours">希望最小勤務時間（時間）</Label>
+                                <Input
+                                    id="min-work-hours"
+                                    type="number"
+                                    min="0"
+                                    step="0.5"
+                                    value={minWorkHours}
+                                    onChange={(e) => setMinWorkHours(e.target.value)}
+                                    placeholder="例: 80"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="max-work-hours">希望最大勤務時間（時間）</Label>
+                                <Input
+                                    id="max-work-hours"
+                                    type="number"
+                                    min="0"
+                                    step="0.5"
+                                    value={maxWorkHours}
+                                    onChange={(e) => setMaxWorkHours(e.target.value)}
+                                    placeholder="例: 110"
+                                />
+                            </div>
+                        </div>
+                    )}
                     <AlertDialogFooter>
                         <AlertDialogCancel>キャンセル</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => {
-                            confirmDialogContent.action();
-                            setIsConfirmDialogOpen(false);
-                        }}>
+                        <AlertDialogAction
+                            onClick={() => {
+                                confirmDialogContent.action();
+                                setIsConfirmDialogOpen(false);
+                            }}
+                            disabled={confirmDialogContent.title === 'シフト希望を提出' && (!minWorkHours || !maxWorkHours)}
+                        >
                             確認
                         </AlertDialogAction>
                     </AlertDialogFooter>

@@ -129,3 +129,44 @@ export async function fetchPreset(id: string): Promise<Preset> {
     }
     return response.json();
 }
+
+export async function saveTemporaryShiftRequest(date: string, shiftData: { [key: string]: { startTime: string, endTime: string } }, minWorkHours: number, maxWorkHours: number): Promise<void> {
+    const response = await fetch(`${apiUrl}/api/shift_requests/save_temporary`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ date, shift_data: shiftData, min_work_hours: minWorkHours, max_work_hours: maxWorkHours }),
+        credentials: 'include',
+    });
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to save temporary shift request');
+    }
+}
+
+export async function loadTemporaryShiftRequest(date: string): Promise<any> {
+    const response = await fetch(`${apiUrl}/api/shift_requests/load_temporary?date=${date}`, {
+        headers: getHeaders(),
+        credentials: 'include',
+    });
+    if (!response.ok) {
+        if (response.status === 404) {
+            return null;
+        }
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to load temporary shift request');
+    }
+    return response.json();
+}
+
+export async function submitShiftRequest(date: string, shiftData: { [key: string]: { startTime: string, endTime: string } }, minWorkHours: number, maxWorkHours: number): Promise<void> {
+    const response = await fetch(`${apiUrl}/api/shift_requests/submit`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ date, shift_data: shiftData, min_work_hours: minWorkHours, max_work_hours: maxWorkHours }),
+        credentials: 'include',
+    });
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to submit shift request');
+    }
+}
