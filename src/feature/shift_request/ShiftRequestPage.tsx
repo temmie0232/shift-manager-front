@@ -2,24 +2,17 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter } from "@/components/ui/drawer";
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+
 import { Preset } from '@/types/preset';
 import { fetchPresets, saveTemporaryShiftRequest, loadTemporaryShiftRequest, submitShiftRequest } from '@/lib/api';
 import { format, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from 'date-fns';
-import CustomCalendar from '@/components/elements/CustomCalendar';
+import CalendarSection from './CalendarSection';
+import PresetList from './PresetList';
+import OperationDrawer from './OperationDrawer';
+import ConfirmationDialog from './ConfirmationDialog';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import PresetSelectionDrawer from './PresetSelectionDawer';
 
 interface ShiftInfo {
     startTime: string;
@@ -35,6 +28,7 @@ const ShiftRequestPage: React.FC = () => {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
     const [confirmDialogContent, setConfirmDialogContent] = useState({ title: '', description: '', action: () => { } });
+    const [isPresetDrawerOpen, setIsPresetDrawerOpen] = useState(false);
     const [minWorkHours, setMinWorkHours] = useState<string>('');
     const [maxWorkHours, setMaxWorkHours] = useState<string>('');
     const [isLoading, setIsLoading] = useState(true);
@@ -244,118 +238,67 @@ const ShiftRequestPage: React.FC = () => {
         <div className="flex flex-col h-[calc(100vh-8rem)] overflow-hidden">
             <div className="flex-grow overflow-hidden">
                 <div className="h-full overflow-y-auto p-4">
-                    <CustomCalendar
+                    <CalendarSection
                         selectedDates={selectedDates}
                         onDateSelect={handleDateSelect}
                         onWeekdaySelect={handleWeekdaySelect}
                         shiftData={shiftData}
-                        className="border border-gray-200 rounded-lg shadow-sm mb-4"
                     />
-                    <ScrollArea className="h-60 rounded-md border p-2">
-                        <div className="flex flex-col items-center space-y-4">
-                            {presets.map((preset) => (
-                                <div key={preset.id} className="relative w-4/5">
-                                    <div
-                                        className={`absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-black transition-opacity duration-300 flex items-center justify-center ${selectedPreset?.id === preset.id ? 'opacity-100' : 'opacity-0'
-                                            }`}
-                                        style={{ left: '-24px' }}
-                                    >
-                                        <div className="w-2 h-2 rounded-full bg-white" />
-                                    </div>
-                                    <Button
-                                        onClick={() => handlePresetClick(preset)}
-                                        className="w-full justify-center transition-all duration-200 ease-in-out hover:scale-[1.02] overflow-hidden"
-                                        style={{
-                                            backgroundColor: 'white',
-                                            color: 'black',
-                                            border: `4px solid ${preset.color}`
-                                        }}
-                                    >
-                                        <span className="mr-3 truncate">{preset.title}</span>
-                                        <span>[ {preset.startTime} - {preset.endTime} ]</span>
-                                    </Button>
-                                </div>
-                            ))}
+                    <div className="mt-4 space-y-2">
+                        <Label>希望勤務時間</Label>
+                        <div className="flex items-center space-x-2">
+                            <Input
+                                type="number"
+                                min="0"
+                                step="0.5"
+                                value={minWorkHours}
+                                onChange={(e) => setMinWorkHours(e.target.value)}
+                                placeholder="最小"
+                                className="w-24"
+                            />
+                            <span>～</span>
+                            <Input
+                                type="number"
+                                min="0"
+                                step="0.5"
+                                value={maxWorkHours}
+                                onChange={(e) => setMaxWorkHours(e.target.value)}
+                                placeholder="最大"
+                                className="w-24"
+                            />
+                            <span>時間</span>
                         </div>
-                    </ScrollArea>
+                    </div>
                 </div>
             </div>
-            <div className="p-4 h-16 bg-white">
+            <div className="p-4 space-y-2 bg-white">
+                <Button onClick={() => setIsPresetDrawerOpen(true)} className="w-full">
+                    プリセット選択
+                </Button>
                 <Button onClick={() => setIsDrawerOpen(true)} className="w-full">
                     シフト操作
                 </Button>
             </div>
-            <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-                <DrawerContent>
-                    <DrawerHeader>
-                        <DrawerTitle>シフト操作</DrawerTitle>
-                        <DrawerDescription>
-                            希望シフトに対する操作を選択してください。
-                        </DrawerDescription>
-                    </DrawerHeader>
-                    <div className="p-4 space-y-2">
-                        <Button onClick={handleSave} className="w-full">現在の変更を一時的に保存</Button>
-                        <Button onClick={handleCancel} variant="outline" className="w-full">現在加えた変更を破棄</Button>
-                        <Button onClick={handleReset} variant="destructive" className="w-full">シフトをリセット</Button>
-                        <Button onClick={handleSubmit} className="w-full">シフト希望を提出</Button>
-                    </div>
-                    <DrawerFooter>
-                        <Button variant="outline" onClick={() => setIsDrawerOpen(false)}>
-                            閉じる
-                        </Button>
-                    </DrawerFooter>
-                </DrawerContent>
-            </Drawer>
-            <AlertDialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>{confirmDialogContent.title}</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {confirmDialogContent.description}
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    {confirmDialogContent.title === 'シフト希望を提出' && (
-                        <div className="space-y-4 py-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="min-work-hours">希望最小勤務時間（時間）</Label>
-                                <Input
-                                    id="min-work-hours"
-                                    type="number"
-                                    min="0"
-                                    step="0.5"
-                                    value={minWorkHours}
-                                    onChange={(e) => setMinWorkHours(e.target.value)}
-                                    placeholder="例: 80"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="max-work-hours">希望最大勤務時間（時間）</Label>
-                                <Input
-                                    id="max-work-hours"
-                                    type="number"
-                                    min="0"
-                                    step="0.5"
-                                    value={maxWorkHours}
-                                    onChange={(e) => setMaxWorkHours(e.target.value)}
-                                    placeholder="例: 110"
-                                />
-                            </div>
-                        </div>
-                    )}
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>キャンセル</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={() => {
-                                confirmDialogContent.action();
-                                setIsConfirmDialogOpen(false);
-                            }}
-                            disabled={confirmDialogContent.title === 'シフト希望を提出' && (!minWorkHours || !maxWorkHours)}
-                        >
-                            確認
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+            <OperationDrawer
+                isOpen={isDrawerOpen}
+                onOpenChange={setIsDrawerOpen}
+                onSave={handleSave}
+                onCancel={handleCancel}
+                onReset={handleReset}
+                onSubmit={handleSubmit}
+            />
+            <ConfirmationDialog
+                isOpen={isConfirmDialogOpen}
+                onOpenChange={setIsConfirmDialogOpen}
+                content={confirmDialogContent}
+            />
+            <PresetSelectionDrawer
+                isOpen={isPresetDrawerOpen}
+                onOpenChange={setIsPresetDrawerOpen}
+                presets={presets}
+                selectedPreset={selectedPreset}
+                onPresetClick={handlePresetClick}
+            />
         </div>
     );
 };
