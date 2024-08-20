@@ -5,4 +5,5 @@ export type Employee = {
     birthday: string;
     hourly_wage?: number;
     skills?: string[];
+    isFirstLogin?: boolean;
 };

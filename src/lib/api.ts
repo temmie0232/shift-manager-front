@@ -36,10 +36,14 @@ export async function login(employeeId: string, birthday: string): Promise<{ emp
     const data = await response.json();
     setAuthToken(data.token);
 
-    // Store user data in localStorage
-    localStorage.setItem('userData', JSON.stringify(data.employee));
+    // Determine if this is the first login
+    const isFirstLogin = !data.employee.hourly_wage || !data.employee.skills || data.employee.skills.length === 0;
 
-    return data;
+    // Store user data in localStorage with isFirstLogin
+    const userData = { ...data.employee, isFirstLogin };
+    localStorage.setItem('userData', JSON.stringify(userData));
+
+    return { ...data, employee: userData };
 }
 
 export async function fetchEmployees(): Promise<Employee[]> {

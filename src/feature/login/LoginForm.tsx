@@ -27,9 +27,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ employees }) => {
         try {
             const { employee, token } = await login(selectedEmployeeId, birthday);
             localStorage.setItem('authToken', token);
-            localStorage.setItem('userData', JSON.stringify(employee));
 
-            if (!employee.hourly_wage || !employee.skills) {
+            if (employee.isFirstLogin) {
                 setShowUserInfoDialog(true);
             } else {
                 router.push('/schedule');
@@ -44,13 +43,19 @@ const LoginForm: React.FC<LoginFormProps> = ({ employees }) => {
         if (data) {
             try {
                 await updateUserInfo(data.hourlyWage, data.skills);
+                const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+                userData.isFirstLogin = false;
+                userData.hourly_wage = data.hourlyWage;
+                userData.skills = data.skills;
+                localStorage.setItem('userData', JSON.stringify(userData));
                 router.push('/schedule');
             } catch (error) {
                 console.error('Failed to update user info', error);
                 // Handle error (e.g., show error message)
             }
+        } else {
+            setShowUserInfoDialog(false);
         }
-        setShowUserInfoDialog(false);
     };
 
     return (
