@@ -1,5 +1,5 @@
 import { Employee } from '@/types/employee';
-import { Preset } from '@/types/preset';
+import { Preset, PresetBackend } from '@/types/preset';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -13,8 +13,9 @@ function getHeaders() {
     const headers: Record<string, string> = {
         'Content-Type': 'application/json',
     };
-    if (authToken) {
-        headers['Authorization'] = `Bearer ${authToken}`;
+    const token = localStorage.getItem('authToken');
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
     }
     return headers;
 }
@@ -34,6 +35,10 @@ export async function login(employeeId: string, birthday: string): Promise<{ emp
     }
     const data = await response.json();
     setAuthToken(data.token);
+
+    // Store user data in localStorage
+    localStorage.setItem('userData', JSON.stringify(data.employee));
+
     return data;
 }
 
@@ -68,7 +73,16 @@ export async function fetchPresets(): Promise<Preset[]> {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to fetch presets');
     }
-    return response.json();
+    const presets: PresetBackend[] = await response.json();
+    return presets.map(preset => ({
+        ...preset,
+        startTime: formatTime(preset.start_time),
+        endTime: formatTime(preset.end_time)
+    }));
+}
+
+function formatTime(time: string): string {
+    return time;
 }
 
 export async function createPreset(preset: Omit<Preset, 'id'>): Promise<Preset> {
@@ -128,4 +142,83 @@ export async function fetchPreset(id: string): Promise<Preset> {
         throw new Error(errorData.message || 'Failed to fetch preset');
     }
     return response.json();
+}
+
+export async function saveTemporaryShiftRequest(date: string, shiftData: { [key: string]: { startTime: string, endTime: string } }, minWorkHours: number, maxWorkHours: number): Promise<void> {
+    const response = await fetch(`${apiUrl}/api/shift_requests/save_temporary`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ date, shift_data: shiftData, min_work_hours: minWorkHours, max_work_hours: maxWorkHours }),
+        credentials: 'include',
+    });
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to save temporary shift request');
+    }
+}
+
+export async function loadTemporaryShiftRequest(date: string): Promise<any> {
+    const response = await fetch(`${apiUrl}/api/shift_requests/load_temporary?date=${date}`, {
+        headers: getHeaders(),
+        credentials: 'include',
+    });
+    if (!response.ok) {
+        if (response.status === 404) {
+            return null;
+        }
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to load temporary shift request');
+    }
+    return response.json();
+}
+
+export async function submitShiftRequest(date: string, shiftData: { [key: string]: { startTime: string, endTime: string } }, minWorkHours: number, maxWorkHours: number): Promise<void> {
+    const response = await fetch(`${apiUrl}/api/shift_requests/submit`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ date, shift_data: shiftData, min_work_hours: minWorkHours, max_work_hours: maxWorkHours }),
+        credentials: 'include',
+    });
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to submit shift request');
+    }
+}
+
+export async function uploadShiftFiles(pdfFiles: File[], csvFile: File | null): Promise<void> {
+    const formData = new FormData();
+
+    pdfFiles.forEach((file, index) => {
+        formData.append(`pdf_files[${index}]`, file);
+    });
+
+    if (csvFile) {
+        formData.append('csv_file', csvFile);
+    }
+
+    const headers = getHeaders();
+    delete headers['Content-Type']; // Let the browser set the correct content type for FormData
+
+    const response = await fetch(`${apiUrl}/api/admin/upload_shift`, {
+        method: 'POST',
+        headers: headers,
+        body: formData,
+        credentials: 'include',
+    });
+
+    if (!response.ok) {
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.indexOf("application/json") !== -1) {
+            const errorData = await response.json();
+            console.error('Upload error:', errorData);
+            throw new Error(errorData.error || 'Failed to upload shift files');
+        } else {
+            const errorText = await response.text();
+            console.error('Upload error (non-JSON):', errorText);
+            throw new Error('Server error occurred');
+        }
+    }
+
+    const responseData = await response.json();
+    console.log('Response data:', responseData);
 }

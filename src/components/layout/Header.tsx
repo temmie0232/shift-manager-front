@@ -1,14 +1,34 @@
-"use client";
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { IoReorderThree } from 'react-icons/io5';
+import { GrUserAdmin } from 'react-icons/gr';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import AdminPopover from '../elements/AdminPopover';
 
 const Header: React.FC = () => {
     const router = useRouter();
     const pathname = usePathname();
+    const [isAdmin, setIsAdmin] = useState(false);
+
+    useEffect(() => {
+        const checkAdminStatus = () => {
+            const userDataString = localStorage.getItem('userData');
+            if (userDataString) {
+                const userData = JSON.parse(userDataString);
+                setIsAdmin(userData.employee_type === 0);
+            }
+        };
+
+        checkAdminStatus();
+        // Add event listener for storage changes
+        window.addEventListener('storage', checkAdminStatus);
+
+        // Cleanup
+        return () => {
+            window.removeEventListener('storage', checkAdminStatus);
+        };
+    }, []);
 
     const getPageTitle = () => {
         switch (pathname) {
@@ -60,7 +80,13 @@ const Header: React.FC = () => {
             <h1 className="text-2xl font-semibold text-gray-800">
                 {getPageTitle()}
             </h1>
-            <div></div>
+            {isAdmin && (
+                <AdminPopover>
+                    <Button variant="ghost" className={buttonClass}>
+                        <GrUserAdmin className="h-6 w-6 text-gray-700" />
+                    </Button>
+                </AdminPopover>
+            )}
         </header>
     );
 };

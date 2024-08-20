@@ -4,6 +4,7 @@ export type Preset = {
     color: string;
     startTime: string;
     endTime: string;
+    system?: boolean;
 };
 
 export type PresetBackend = {
@@ -12,4 +13,5 @@ export type PresetBackend = {
     color: string;
     start_time: string;
     end_time: string;
+    system?: boolean;
 };

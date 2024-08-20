@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label"
 interface ColorRadioGroupProps {
     selectedColor: string;
     onChange: (color: string) => void;
+    disabled?: boolean;
 }
 
 const colors = [
@@ -18,15 +19,26 @@ const colors = [
     { value: '#ba75a7', label: '紫' },
 ];
 
-const ColorRadioGroup: React.FC<ColorRadioGroupProps> = ({ selectedColor, onChange }) => {
+const ColorRadioGroup: React.FC<ColorRadioGroupProps> = ({ selectedColor, onChange, disabled }) => {
     return (
-        <RadioGroup value={selectedColor} onValueChange={onChange} className="grid grid-cols-4 gap-2">
+        <RadioGroup
+            value={selectedColor}
+            onValueChange={onChange}
+            className="grid grid-cols-4 gap-2"
+            disabled={disabled}
+        >
             {colors.map((color) => (
                 <div key={color.value} className="flex items-center space-x-2">
-                    <RadioGroupItem value={color.value} id={color.value} className="sr-only" />
+                    <RadioGroupItem
+                        value={color.value}
+                        id={color.value}
+                        className="sr-only"
+                        disabled={disabled}
+                    />
                     <Label
                         htmlFor={color.value}
-                        className="w-6 h-6 rounded-full cursor-pointer flex items-center justify-center transition-all duration-300 ease-in-out transform hover:scale-110"
+                        className={`w-6 h-6 rounded-full cursor-pointer flex items-center justify-center transition-all duration-300 ease-in-out transform hover:scale-110 ${disabled ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
                         style={{ backgroundColor: color.value }}
                     >
                         {selectedColor === color.value && (
