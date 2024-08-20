@@ -34,6 +34,10 @@ export async function login(employeeId: string, birthday: string): Promise<{ emp
     }
     const data = await response.json();
     setAuthToken(data.token);
+
+    // Store user data in localStorage
+    localStorage.setItem('userData', JSON.stringify(data.employee));
+
     return data;
 }
 
