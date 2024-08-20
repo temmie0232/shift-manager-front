@@ -8,7 +8,7 @@ import DeleteConfirmDialog from './DeleteConfirmDialog';
 import { Preset } from '@/types/preset';
 import { fetchPresets, createPreset, deletePreset } from '@/lib/api';
 import { useRouter } from 'next/navigation';
-
+import { Separator } from '@/components/ui/separator';
 
 const PresetCreationPage = () => {
     const [presets, setPresets] = useState<Preset[]>([]);
@@ -44,7 +44,41 @@ const PresetCreationPage = () => {
     }, []);
 
     const handlePresetClick = (id: string) => {
-        router.push(`/preset_creation/${id}`);
+        const preset = presets.find(p => p.id === id);
+        if (preset && !preset.system && preset.title !== 'フリー' && preset.title !== '休み') {
+            router.push(`/preset_creation/${id}`);
+        }
+    };
+
+    const renderPresets = () => {
+        const systemPresets = presets.filter(preset => preset.system || preset.title === 'フリー' || preset.title === '休み');
+        const userPresets = presets.filter(preset => !preset.system && preset.title !== 'フリー' && preset.title !== '休み');
+
+        return (
+            <>
+                {systemPresets.map((preset) => (
+                    <PresetCard
+                        key={preset.id}
+                        preset={preset}
+                        onClick={() => handlePresetClick(preset.id)}
+                        onDelete={() => handleDeleteClick(preset.id)}
+                    />
+                ))}
+                {userPresets.length > 0 && (
+                    <>
+                        <Separator className="mb-4" />
+                        {userPresets.map((preset) => (
+                            <PresetCard
+                                key={preset.id}
+                                preset={preset}
+                                onClick={() => handlePresetClick(preset.id)}
+                                onDelete={() => handleDeleteClick(preset.id)}
+                            />
+                        ))}
+                    </>
+                )}
+            </>
+        );
     };
 
     const handleAddPreset = async () => {
@@ -60,8 +94,11 @@ const PresetCreationPage = () => {
     };
 
     const handleDeleteClick = (id: string) => {
-        setPresetToDelete(id);
-        setIsDeleteDialogOpen(true);
+        const preset = presets.find(p => p.id === id);
+        if (preset && !preset.system && preset.title !== 'フリー' && preset.title !== '休み') {
+            setPresetToDelete(id);
+            setIsDeleteDialogOpen(true);
+        }
     };
 
     const handleDeleteConfirm = async () => {
@@ -89,14 +126,7 @@ const PresetCreationPage = () => {
     return (
         <div className="p-4">
             <div className="flex flex-col mt-2 mb-16">
-                {presets.map((preset) => (
-                    <PresetCard
-                        key={preset.id}
-                        preset={preset}
-                        onClick={() => handlePresetClick(preset.id)}
-                        onDelete={() => handleDeleteClick(preset.id)}
-                    />
-                ))}
+                {renderPresets()}
             </div>
             <Button
                 className="fixed bottom-20 right-4 rounded-full w-14 h-14"
