@@ -57,8 +57,8 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDates, onDateSe
     };
 
     const getLighterColor = (color: string | undefined, factor: number = 0.9) => {
-        if (!color) return 'white'; // 色が未定義の場合はデフォルトで白を返す
-        if (color === '#ffffff') return 'rgb(0, 0, 0)'; // フリーの場合は黒を返す
+        if (!color) return 'white';
+        if (color === '#ffffff') return 'rgb(0, 0, 0)';
         const hex = color.replace('#', '');
         const r = parseInt(hex.substr(0, 2), 16);
         const g = parseInt(hex.substr(2, 2), 16);
@@ -98,6 +98,7 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDates, onDateSe
                         const shiftInfo = shiftData[dateKey];
                         const isSelectable = isDateSelectable(day);
                         const isFree = shiftInfo && shiftInfo.color === '#ffffff';
+                        const isHoliday = shiftInfo && shiftInfo.startTime === '00:00' && shiftInfo.endTime === '00:00';
                         const textColor = isSelectable
                             ? (isFree ? 'text-white' : 'text-gray-900')
                             : 'text-gray-400';
@@ -121,9 +122,15 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDates, onDateSe
                                     <>
                                         <div className="my-1 h-px bg-gray-300"></div>
                                         <div className="text-xs flex flex-col items-center">
-                                            <div>{shiftInfo.startTime}</div>
-                                            <div className="h-2 w-px bg-gray-400"></div>
-                                            <div>{shiftInfo.endTime}</div>
+                                            {isHoliday ? (
+                                                <div>休</div>
+                                            ) : (
+                                                <>
+                                                    <div>{shiftInfo.startTime}</div>
+                                                    <div className="h-2 w-px bg-gray-400"></div>
+                                                    <div>{shiftInfo.endTime}</div>
+                                                </>
+                                            )}
                                         </div>
                                     </>
                                 )}
