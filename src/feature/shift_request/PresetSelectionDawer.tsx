@@ -26,22 +26,30 @@ const PresetSelectionDrawer: React.FC<PresetSelectionDrawerProps> = ({
             </DrawerHeader>
             <ScrollArea className="h-[50vh] px-4">
                 <div className="space-y-2">
-                    {presets.map((preset) => (
-                        <Button
-                            key={preset.id}
-                            onClick={() => onPresetClick(preset)}
-                            className="w-full justify-between"
-                            variant={selectedPreset?.id === preset.id ? "default" : "outline"}
-                            style={{
-                                borderColor: preset.color,
-                                backgroundColor: selectedPreset?.id === preset.id ? preset.color : 'transparent',
-                                color: selectedPreset?.id === preset.id ? 'white' : 'black',
-                            }}
-                        >
-                            <span>{preset.title}</span>
-                            <span>{preset.startTime} - {preset.endTime}</span>
-                        </Button>
-                    ))}
+                    {presets.map((preset) => {
+                        const isFree = preset.title === 'フリー';
+                        const isSelected = selectedPreset?.id === preset.id;
+                        return (
+                            <Button
+                                key={preset.id}
+                                onClick={() => onPresetClick(preset)}
+                                className="w-full justify-between"
+                                variant={isSelected ? "default" : "outline"}
+                                style={{
+                                    borderColor: isFree ? 'black' : preset.color,
+                                    backgroundColor: isSelected
+                                        ? (isFree ? 'black' : preset.color)
+                                        : 'transparent',
+                                    color: isSelected
+                                        ? 'white'
+                                        : 'black',
+                                }}
+                            >
+                                <span>{preset.title}</span>
+                                <span>{preset.startTime} - {preset.endTime}</span>
+                            </Button>
+                        );
+                    })}
                 </div>
             </ScrollArea>
             <DrawerFooter>

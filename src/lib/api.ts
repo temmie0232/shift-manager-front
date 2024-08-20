@@ -1,5 +1,5 @@
 import { Employee } from '@/types/employee';
-import { Preset } from '@/types/preset';
+import { Preset, PresetBackend } from '@/types/preset';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -68,7 +68,16 @@ export async function fetchPresets(): Promise<Preset[]> {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to fetch presets');
     }
-    return response.json();
+    const presets: PresetBackend[] = await response.json();
+    return presets.map(preset => ({
+        ...preset,
+        startTime: formatTime(preset.start_time),
+        endTime: formatTime(preset.end_time)
+    }));
+}
+
+function formatTime(time: string): string {
+    return time;
 }
 
 export async function createPreset(preset: Omit<Preset, 'id'>): Promise<Preset> {

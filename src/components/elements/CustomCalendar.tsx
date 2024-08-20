@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, format, isSameMonth, addMonths, isBefore, isAfter, startOfDay, getDay } from 'date-fns';
+import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, format, isSameMonth, addMonths, isBefore, isAfter, startOfDay, getDay, isSameDay } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -56,7 +56,9 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDates, onDateSe
         );
     };
 
-    const getLighterColor = (color: string, factor: number = 0.9) => {  // factorを0.9に変更
+    const getLighterColor = (color: string | undefined, factor: number = 0.9) => {
+        if (!color) return 'white'; // 色が未定義の場合はデフォルトで白を返す
+        if (color === '#ffffff') return 'rgb(0, 0, 0)'; // フリーの場合は黒を返す
         const hex = color.replace('#', '');
         const r = parseInt(hex.substr(0, 2), 16);
         const g = parseInt(hex.substr(2, 2), 16);
@@ -95,8 +97,13 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDates, onDateSe
                         const dateKey = format(day, 'yyyy-MM-dd');
                         const shiftInfo = shiftData[dateKey];
                         const isSelectable = isDateSelectable(day);
-                        const textColor = isSelectable ? 'text-gray-900' : 'text-gray-400';
-                        const backgroundColor = shiftInfo && shiftInfo.color ? getLighterColor(shiftInfo.color) : 'white';
+                        const isFree = shiftInfo && shiftInfo.color === '#ffffff';
+                        const textColor = isSelectable
+                            ? (isFree ? 'text-white' : 'text-gray-900')
+                            : 'text-gray-400';
+                        const backgroundColor = shiftInfo
+                            ? (isFree ? 'rgb(0, 0, 0)' : getLighterColor(shiftInfo.color))
+                            : 'white';
 
                         return (
                             <button
@@ -106,7 +113,6 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDates, onDateSe
                                 style={{
                                     backgroundColor: backgroundColor,
                                     opacity: isSelectable ? 1 : 0.5,
-                                    // border プロパティを削除
                                 }}
                                 disabled={!isSelectable}
                             >

@@ -17,19 +17,24 @@ const PresetCard: React.FC<PresetCardProps> = ({ preset, onClick, onDelete }) =>
     >
         <CardContent className="p-4">
             <div className="flex items-center mb-2">
-                <div className="w-4 h-4 rounded-full mr-2" style={{ backgroundColor: preset.color }}></div>
+                <div
+                    className={`w-4 h-4 rounded-full mr-2 ${preset.title === 'フリー' ? 'border border-gray-400' : ''}`}
+                    style={{ backgroundColor: preset.color }}
+                ></div>
                 <h3 className="font-semibold flex-grow">{preset.title}</h3>
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-2 right-2 transition-transform duration-300 ease-in-out hover:scale-110 active:scale-90"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onDelete();
-                    }}
-                >
-                    <X size={18} />
-                </Button>
+                {!preset.system && (
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute top-2 right-2 transition-transform duration-300 ease-in-out hover:scale-110 active:scale-90"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete();
+                        }}
+                    >
+                        <X size={18} />
+                    </Button>
+                )}
             </div>
             <p className="text-sm text-gray-600">
                 {`${preset.startTime || '未設定'} ~ ${preset.endTime || '未設定'}`}

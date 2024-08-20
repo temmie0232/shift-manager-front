@@ -51,6 +51,11 @@ const PresetDetailPage: React.FC<PresetDetailPageProps> = ({ presetId }) => {
 
     const handleSave = async () => {
         if (preset) {
+            if (preset.system) {
+                setError('システムプリセットは編集できません。');
+                return;
+            }
+
             if (preset.title.trim() === '') {
                 setTitleError('シフト名を入力してください');
                 return;
@@ -79,6 +84,11 @@ const PresetDetailPage: React.FC<PresetDetailPageProps> = ({ presetId }) => {
 
     const handleDeleteConfirm = async () => {
         if (preset) {
+            if (preset.system) {
+                setError('システムプリセットは削除できません。');
+                return;
+            }
+
             try {
                 await deletePreset(preset.id);
                 router.push('/preset_creation');
@@ -94,7 +104,7 @@ const PresetDetailPage: React.FC<PresetDetailPageProps> = ({ presetId }) => {
     };
 
     const handleTimeSelection = async (time: string) => {
-        if (preset) {
+        if (preset && !preset.system) {
             const updatedPreset = {
                 ...preset,
                 [timeType === 'start' ? 'startTime' : 'endTime']: time
@@ -114,17 +124,21 @@ const PresetDetailPage: React.FC<PresetDetailPageProps> = ({ presetId }) => {
     };
 
     const openTimeDrawer = (type: 'start' | 'end') => {
-        setTimeType(type);
-        setIsTimeDrawerOpen(true);
+        if (preset && !preset.system) {
+            setTimeType(type);
+            setIsTimeDrawerOpen(true);
+        }
     };
 
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newTitle = e.target.value;
-        setPreset(prev => prev ? { ...prev, title: newTitle } : null);
-        if (newTitle.trim() === '') {
-            setTitleError('シフト名を入力してください');
-        } else {
-            setTitleError(null);
+        if (preset && !preset.system) {
+            const newTitle = e.target.value;
+            setPreset(prev => prev ? { ...prev, title: newTitle } : null);
+            if (newTitle.trim() === '') {
+                setTitleError('シフト名を入力してください');
+            } else {
+                setTitleError(null);
+            }
         }
     };
 
@@ -151,6 +165,7 @@ const PresetDetailPage: React.FC<PresetDetailPageProps> = ({ presetId }) => {
                             value={preset.title}
                             onChange={handleTitleChange}
                             className={titleError ? 'border-red-500' : ''}
+                            disabled={preset.system}
                         />
                         {titleError && <p className="text-red-500 text-sm mt-1">{titleError}</p>}
                     </div>
@@ -158,7 +173,8 @@ const PresetDetailPage: React.FC<PresetDetailPageProps> = ({ presetId }) => {
                         <Label>表示色</Label>
                         <ColorRadioGroup
                             selectedColor={preset.color}
-                            onChange={(color) => setPreset({ ...preset, color })}
+                            onChange={(color) => !preset.system && setPreset({ ...preset, color })}
+                            disabled={preset.system}
                         />
                     </div>
                     <div>
@@ -168,6 +184,7 @@ const PresetDetailPage: React.FC<PresetDetailPageProps> = ({ presetId }) => {
                                 onClick={() => openTimeDrawer('start')}
                                 className="w-full justify-between"
                                 variant="outline"
+                                disabled={preset.system}
                             >
                                 <span>開始時間</span>
                                 <span>{preset.startTime || '未設定'}</span>
@@ -176,6 +193,7 @@ const PresetDetailPage: React.FC<PresetDetailPageProps> = ({ presetId }) => {
                                 onClick={() => openTimeDrawer('end')}
                                 className="w-full justify-between"
                                 variant="outline"
+                                disabled={preset.system}
                             >
                                 <span>終了時間</span>
                                 <span>{preset.endTime || '未設定'}</span>
@@ -186,11 +204,13 @@ const PresetDetailPage: React.FC<PresetDetailPageProps> = ({ presetId }) => {
                 </div>
             </div>
             <div className="p-3 bg-white">
-                <div className="grid grid-cols-2 gap-3 mb-3">
-                    <Button onClick={handleSave} className="w-full">保存</Button>
-                    <Button onClick={() => setIsDeleteDialogOpen(true)} variant="destructive" className="w-full">削除</Button>
-                </div>
-                <Button onClick={handleCancel} variant="outline" className="w-full">キャンセル</Button>
+                {!preset.system && (
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                        <Button onClick={handleSave} className="w-full">保存</Button>
+                        <Button onClick={() => setIsDeleteDialogOpen(true)} variant="destructive" className="w-full">削除</Button>
+                    </div>
+                )}
+                <Button onClick={handleCancel} variant="outline" className="w-full">戻る</Button>
             </div>
             <TimeSelectionDrawer
                 isOpen={isTimeDrawerOpen}
