@@ -13,8 +13,9 @@ function getHeaders() {
     const headers: Record<string, string> = {
         'Content-Type': 'application/json',
     };
-    if (authToken) {
-        headers['Authorization'] = `Bearer ${authToken}`;
+    const token = localStorage.getItem('authToken');
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
     }
     return headers;
 }
@@ -182,4 +183,42 @@ export async function submitShiftRequest(date: string, shiftData: { [key: string
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to submit shift request');
     }
+}
+
+export async function uploadShiftFiles(pdfFiles: File[], csvFile: File | null): Promise<void> {
+    const formData = new FormData();
+
+    pdfFiles.forEach((file, index) => {
+        formData.append(`pdf_files[${index}]`, file);
+    });
+
+    if (csvFile) {
+        formData.append('csv_file', csvFile);
+    }
+
+    const headers = getHeaders();
+    delete headers['Content-Type']; // Let the browser set the correct content type for FormData
+
+    const response = await fetch(`${apiUrl}/api/admin/upload_shift`, {
+        method: 'POST',
+        headers: headers,
+        body: formData,
+        credentials: 'include',
+    });
+
+    if (!response.ok) {
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.indexOf("application/json") !== -1) {
+            const errorData = await response.json();
+            console.error('Upload error:', errorData);
+            throw new Error(errorData.error || 'Failed to upload shift files');
+        } else {
+            const errorText = await response.text();
+            console.error('Upload error (non-JSON):', errorText);
+            throw new Error('Server error occurred');
+        }
+    }
+
+    const responseData = await response.json();
+    console.log('Response data:', responseData);
 }
