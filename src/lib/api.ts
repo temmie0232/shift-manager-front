@@ -222,3 +222,16 @@ export async function uploadShiftFiles(pdfFiles: File[], csvFile: File | null): 
     const responseData = await response.json();
     console.log('Response data:', responseData);
 }
+
+export async function updateUserInfo(hourlyWage: number, skills: string[]): Promise<void> {
+    const response = await fetch(`${apiUrl}/api/user/update_info`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ hourly_wage: hourlyWage, skills }),
+        credentials: 'include',
+    });
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update user info');
+    }
+}
