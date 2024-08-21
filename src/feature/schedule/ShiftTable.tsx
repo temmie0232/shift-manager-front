@@ -1,155 +1,105 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { format, parse, differenceInMinutes } from 'date-fns';
+import { format, isSameDay, isWeekend, getDay, isBefore } from 'date-fns';
+import { ja } from 'date-fns/locale';
 
 interface Shift {
     date: string;
     start_time: string | null;
     end_time: string | null;
     work_type: string;
+    is_holiday: boolean;
+}
+
+interface ShiftTableProps {
+    shifts: Shift[];
+    hourlyWage: number;
+    calculateWorkTime: (startTime: string | null, endTime: string | null) => string;
+    calculateSalary: (workTime: string, hourlyWage: number) => number;
 }
 
 const formatTimeRange = (start: string | null, end: string | null) => {
-    if (!start || !end) return '(休み)';
-    return `${start}～${end}`;
+    if (!start || !end) return (
+        <div className="flex items-center justify-center h-full">
+            休み
+        </div>
+    );
+    return (
+        <div className="flex flex-col items-center">
+            <div>{start}</div>
+            <div className="h-2 w-px bg-gray-500"></div>
+            <div>{end}</div>
+        </div>
+    );
 };
 
-const calculateWorkTime = (startTime: string | null, endTime: string | null) => {
-    if (!startTime || !endTime) return '00:00 (0m)';
-    try {
-        const start = parse(startTime, 'HH:mm', new Date());
-        const end = parse(endTime, 'HH:mm', new Date());
-        let totalMinutes = differenceInMinutes(end, start);
-        if (totalMinutes < 0) {
-            totalMinutes += 24 * 60; // 日をまたぐ場合（例：22:00～02:00）
-        }
-
-        let workMinutes = totalMinutes;
-        let breakMinutes = 0;
-
-        if (totalMinutes <= 180) {
-            workMinutes = 180;
-        } else if (totalMinutes <= 240) {
-            workMinutes = 240;
-        } else if (totalMinutes <= 300) {
-            workMinutes = 270;
-            breakMinutes = 30;
-        } else if (totalMinutes <= 360) {
-            workMinutes = 330;
-            breakMinutes = 30;
-        } else if (totalMinutes <= 420) {
-            workMinutes = 375;
-            breakMinutes = 45;
-        } else if (totalMinutes <= 480) {
-            workMinutes = 420;
-            breakMinutes = 60;
-        } else if (totalMinutes <= 540) {
-            workMinutes = 480;
-            breakMinutes = 60;
-        } else if (totalMinutes <= 600) {
-            workMinutes = 525;
-            breakMinutes = 75;
-        } else if (totalMinutes <= 660) {
-            workMinutes = 570;
-            breakMinutes = 90;
-        } else if (totalMinutes <= 720) {
-            workMinutes = 630;
-            breakMinutes = 90;
-        } else if (totalMinutes <= 780) {
-            workMinutes = 675;
-            breakMinutes = 105;
-        } else if (totalMinutes <= 840) {
-            workMinutes = 720;
-            breakMinutes = 120;
-        } else {
-            workMinutes = 780;
-            breakMinutes = 120;
-        }
-
-        const hours = Math.floor(workMinutes / 60);
-        const minutes = workMinutes % 60;
-
-        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} (${breakMinutes}m)`;
-    } catch (error) {
-        console.error('Error calculating work time:', error);
-        return '00:00 (0m)';
-    }
-};
-
-const calculateSalary = (workTime: string, hourlyWage: number) => {
-    const [hours, minutes] = workTime.split(':').map(Number);
-    const totalHours = hours + minutes / 60;
-    return Math.round(totalHours * hourlyWage);
-};
-
-const ShiftTable: React.FC = () => {
-    const [shifts, setShifts] = useState<Shift[]>([]);
-    const [hourlyWage, setHourlyWage] = useState<number>(0);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        const fetchShifts = async () => {
-            try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shifts`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                    }
-                });
-                if (!response.ok) {
-                    throw new Error('Failed to fetch shifts');
-                }
-                const data = await response.json();
-                console.log('Fetched shifts:', data); // デバッグ用ログ
-                setShifts(data);
-            } catch (error) {
-                console.error('Error fetching shifts:', error);
-                setError('シフトデータの取得に失敗しました');
-            }
-        };
-
-        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-        setHourlyWage(userData.hourly_wage || 0);
-
-        fetchShifts();
-    }, []);
-
-    if (error) {
-        return <div className="text-red-500">{error}</div>;
-    }
+const ShiftTable: React.FC<ShiftTableProps> = ({ shifts, hourlyWage, calculateWorkTime, calculateSalary }) => {
+    const today = new Date();
 
     return (
-        <ScrollArea className="h-[calc(100vh-16rem)] w-full">
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>営業日</TableHead>
-                        <TableHead>出勤時間帯</TableHead>
-                        <TableHead>実労働時間</TableHead>
-                        <TableHead>給料</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {shifts.map((shift, index) => {
-                        const workTime = shift.work_type === '勤務'
-                            ? calculateWorkTime(shift.start_time, shift.end_time)
-                            : '00:00 (0m)';
-                        const salary = shift.work_type === '勤務'
-                            ? calculateSalary(workTime.split(' ')[0], hourlyWage)
-                            : 0;
+        <div className="relative flex flex-col items-center space-y-4">
+            <div className="w-full max-w-3xl rounded-lg overflow-hidden border border-gray-200">
+                <Table>
+                    <TableHeader>
+                        <TableRow className="bg-white">
+                            <TableHead className="w-1/5 text-center text-xs">日</TableHead>
+                            <TableHead className="w-1/4 text-center text-xs">時間</TableHead>
+                            <TableHead className="w-1/3 text-center text-xs">実労働時間<br />(+休憩時間)</TableHead>
+                            <TableHead className="w-1/4 text-center text-xs">給料</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                </Table>
+                <ScrollArea className="h-[calc(100vh-16rem)]">
+                    <Table>
+                        <TableBody>
+                            {shifts.map((shift, index) => {
+                                const shiftDate = new Date(shift.date);
+                                const dayOfWeek = format(shiftDate, 'EEE', { locale: ja });
+                                const workTime = shift.work_type === '勤務'
+                                    ? calculateWorkTime(shift.start_time, shift.end_time)
+                                    : '00:00 (+0m)';
+                                const salary = shift.work_type === '勤務'
+                                    ? calculateSalary(workTime.split(' ')[0], hourlyWage)
+                                    : 0;
+                                const isToday = isSameDay(shiftDate, today);
+                                const isWeekendDay = isWeekend(shiftDate);
+                                const isSundayOrHoliday = getDay(shiftDate) === 0 || shift.is_holiday;
+                                const isPastDay = isBefore(shiftDate, today);
 
-                        return (
-                            <TableRow key={index}>
-                                <TableCell>{format(new Date(shift.date), 'M/d')}</TableCell>
-                                <TableCell>{formatTimeRange(shift.start_time, shift.end_time)}</TableCell>
-                                <TableCell>{workTime}</TableCell>
-                                <TableCell>¥{salary.toLocaleString()}</TableCell>
-                            </TableRow>
-                        );
-                    })}
-                </TableBody>
-            </Table>
-        </ScrollArea>
+                                let rowClass = '';
+                                let dateCellClass = 'text-center';
+
+                                if (isPastDay) {
+                                    rowClass = 'bg-gray-300';
+                                } else if (isToday) {
+                                    rowClass = 'bg-green-100 border-y-2  border-green-500';
+                                }
+
+                                if (isWeekendDay || isSundayOrHoliday) {
+                                    dateCellClass += isSundayOrHoliday ? ' text-red-500' : ' text-blue-500';
+                                }
+
+                                if (shift.work_type !== '勤務') {
+                                    rowClass += ' text-gray-400';
+                                }
+
+                                return (
+                                    <TableRow key={index} className={rowClass}>
+                                        <TableCell className={dateCellClass}>
+                                            {format(shiftDate, 'M/d')}({dayOfWeek})
+                                        </TableCell>
+                                        <TableCell className="text-center">{formatTimeRange(shift.start_time, shift.end_time)}</TableCell>
+                                        <TableCell className="text-center">{workTime}</TableCell>
+                                        <TableCell className="text-center">¥{salary.toLocaleString()}</TableCell>
+                                    </TableRow>
+                                );
+                            })}
+                        </TableBody>
+                    </Table>
+                </ScrollArea>
+            </div>
+        </div>
     );
 };
 
