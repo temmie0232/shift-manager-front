@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Download } from 'lucide-react'
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import ShiftTable from '@/feature/schedule/ShiftTable'
 
 const Page = () => {
     const [error, setError] = useState<string | null>(null);
@@ -45,7 +46,7 @@ const Page = () => {
 
     return (
         <div className="p-4 flex flex-col items-center">
-            <div className="w-full max-w-md">
+            <div className="w-full max-w-md mb-4">
                 <Button
                     onClick={handleDownload}
                     className="w-full mb-4"
@@ -59,9 +60,8 @@ const Page = () => {
                     </Alert>
                 )}
             </div>
-            <div className="mt-8 w-full">
-                {/* ここにスケジュールの内容を配置 */}
-                schedule
+            <div className="w-full">
+                <ShiftTable />
             </div>
         </div>
     )
