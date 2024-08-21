@@ -17,15 +17,16 @@ const PresetCard: React.FC<PresetCardProps> = ({ preset, onClick, onDelete }) =>
         <Card
             className={`relative mb-4 transition-all duration-300 ease-in-out ${isSystemPreset ? '' : 'transform hover:scale-[1.02] active:scale-95 cursor-pointer'
                 }`}
+            style={{
+                borderColor: preset.color,
+                borderWidth: '2px',
+                borderStyle: 'solid'
+            }}
             onClick={isSystemPreset ? undefined : onClick}
         >
             <CardContent className="p-4">
-                <div className="flex items-center mb-2">
-                    <div
-                        className={`w-4 h-4 rounded-full mr-2 ${preset.title === 'フリー' ? 'border border-gray-400' : ''}`}
-                        style={{ backgroundColor: preset.color }}
-                    ></div>
-                    <h3 className="font-semibold flex-grow">{preset.title}</h3>
+                <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-semibold">{preset.title}</h3>
                     {!isSystemPreset && (
                         <Button
                             variant="ghost"
