@@ -176,11 +176,9 @@ export async function loadTemporaryShiftRequest(date: string): Promise<any> {
         credentials: 'include',
     });
     if (!response.ok) {
-        if (response.status === 404) {
-            return null;
-        }
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to load temporary shift request');
+        console.error('Failed to load temporary shift request:', errorData);
+        return null;
     }
     return response.json();
 }
