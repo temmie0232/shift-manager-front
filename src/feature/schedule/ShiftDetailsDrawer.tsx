@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "@/components/ui/drawer";
+import { downloadShift } from '@/lib/api';
 
 interface ShiftDetailsDrawerProps {
     isOpen: boolean;
@@ -10,7 +11,6 @@ interface ShiftDetailsDrawerProps {
     totalWorkHours: number;
     totalWorkMinutes: number;
     totalSalary: number;
-    onDownload: () => void;
 }
 
 const ShiftDetailsDrawer: React.FC<ShiftDetailsDrawerProps> = ({
@@ -20,13 +20,21 @@ const ShiftDetailsDrawer: React.FC<ShiftDetailsDrawerProps> = ({
     totalWorkHours,
     totalWorkMinutes,
     totalSalary,
-    onDownload
 }) => {
+    const handleDownload = async () => {
+        try {
+            await downloadShift();
+        } catch (error) {
+            console.error('Failed to download shift:', error);
+            // エラーメッセージを表示するなどの処理を追加できます
+        }
+    };
+
     return (
         <Drawer open={isOpen} onOpenChange={onClose}>
             <DrawerContent>
                 <DrawerHeader>
-                    <DrawerTitle>シフト詳細</DrawerTitle>
+                    <DrawerTitle>今月のシフト詳細</DrawerTitle>
                 </DrawerHeader>
                 <div className="p-4 space-y-4">
                     <Card>
@@ -55,7 +63,7 @@ const ShiftDetailsDrawer: React.FC<ShiftDetailsDrawerProps> = ({
                     </Card>
                 </div>
                 <DrawerFooter>
-                    <Button onClick={onDownload} className="w-full">
+                    <Button onClick={handleDownload} className="w-full">
                         シフトをダウンロード
                     </Button>
                 </DrawerFooter>

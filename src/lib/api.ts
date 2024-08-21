@@ -239,3 +239,29 @@ export async function updateUserInfo(hourlyWage: number, skills: string[]): Prom
         throw new Error(errorData.message || 'Failed to update user info');
     }
 }
+
+export async function downloadShift(): Promise<void> {
+    try {
+        const response = await fetch(`${apiUrl}/api/download_shift`, {
+            headers: getHeaders(),
+            credentials: 'include',
+        });
+
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'current_shift.pdf';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+        } else {
+            throw new Error('Failed to download shift');
+        }
+    } catch (error) {
+        console.error('Download error:', error);
+        throw error;
+    }
+}
