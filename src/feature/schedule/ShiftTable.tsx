@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { format, parseISO, differenceInMinutes } from 'date-fns';
+import { format, parse, differenceInMinutes } from 'date-fns';
 
 interface Shift {
     date: string;
@@ -12,22 +12,18 @@ interface Shift {
 
 const formatTimeRange = (start: string | null, end: string | null) => {
     if (!start || !end) return '(休み)';
-    try {
-        const startTime = format(parseISO(start), 'HH:mm');
-        const endTime = format(parseISO(end), 'HH:mm');
-        return `${startTime}～${endTime}`;
-    } catch (error) {
-        console.error('Error formatting time range:', error);
-        return '(時間情報エラー)';
-    }
+    return `${start}～${end}`;
 };
 
 const calculateWorkTime = (startTime: string | null, endTime: string | null) => {
     if (!startTime || !endTime) return '00:00 (0m)';
     try {
-        const start = parseISO(startTime);
-        const end = parseISO(endTime);
-        const totalMinutes = differenceInMinutes(end, start);
+        const start = parse(startTime, 'HH:mm', new Date());
+        const end = parse(endTime, 'HH:mm', new Date());
+        let totalMinutes = differenceInMinutes(end, start);
+        if (totalMinutes < 0) {
+            totalMinutes += 24 * 60; // 日をまたぐ場合（例：22:00～02:00）
+        }
 
         let workMinutes = totalMinutes;
         let breakMinutes = 0;
@@ -144,7 +140,7 @@ const ShiftTable: React.FC = () => {
 
                         return (
                             <TableRow key={index}>
-                                <TableCell>{format(parseISO(shift.date), 'M/d')}</TableCell>
+                                <TableCell>{format(new Date(shift.date), 'M/d')}</TableCell>
                                 <TableCell>{formatTimeRange(shift.start_time, shift.end_time)}</TableCell>
                                 <TableCell>{workTime}</TableCell>
                                 <TableCell>¥{salary.toLocaleString()}</TableCell>
