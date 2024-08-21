@@ -17,12 +17,17 @@ const LoginForm: React.FC<LoginFormProps> = ({ employees }) => {
     const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>('');
     const [birthday, setBirthday] = useState('');
     const [showUserInfoDialog, setShowUserInfoDialog] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError(null);
 
-        if (!selectedEmployeeId) return;
+        if (!selectedEmployeeId || !birthday) {
+            setError('従業員と誕生日を入力してください。');
+            return;
+        }
 
         try {
             const { employee, token } = await login(selectedEmployeeId, birthday);
@@ -35,7 +40,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ employees }) => {
             }
         } catch (error) {
             console.error('Login failed', error);
-            // Handle login error (e.g., show error message)
+            setError('ログインに失敗しました。従業員IDと誕生日を確認してください。');
         }
     };
 
@@ -51,7 +56,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ employees }) => {
                 router.push('/schedule');
             } catch (error) {
                 console.error('Failed to update user info', error);
-                // Handle error (e.g., show error message)
+                setError('ユーザー情報の更新に失敗しました。もう一度お試しください。');
             }
         } else {
             setShowUserInfoDialog(false);
@@ -88,6 +93,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ employees }) => {
                     />
                 </div>
                 <Separator className='my-2' />
+                {error && <div className="text-red-500 text-sm">{error}</div>}
                 <Button type="submit" className="w-full">ログイン</Button>
             </form>
             <UserInfoDialog isOpen={showUserInfoDialog} onClose={handleUserInfoSubmit} />

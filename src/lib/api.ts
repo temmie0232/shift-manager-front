@@ -21,6 +21,8 @@ function getHeaders() {
 }
 
 export async function login(employeeId: string, birthday: string): Promise<{ employee: Employee; token: string }> {
+    console.log('Attempting login with:', { employeeId, birthday }); // Debug log
+
     const response = await fetch(`${apiUrl}/api/login`, {
         method: 'POST',
         headers: {
@@ -29,11 +31,18 @@ export async function login(employeeId: string, birthday: string): Promise<{ emp
         body: JSON.stringify({ employeeId, birthday }),
         credentials: 'include',
     });
+
+    console.log('Login response status:', response.status); // Debug log
+
     if (!response.ok) {
         const errorData = await response.json();
+        console.error('Login error:', errorData); // Debug log
         throw new Error(errorData.message || 'Login failed');
     }
+
     const data = await response.json();
+    console.log('Login successful, received data:', data); // Debug log
+
     setAuthToken(data.token);
 
     // Determine if this is the first login
