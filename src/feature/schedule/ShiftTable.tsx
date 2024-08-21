@@ -1,4 +1,5 @@
-import React from 'react';
+"use client"
+import React, { useEffect, useRef } from 'react';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format, isSameDay, isWeekend, getDay, isBefore } from 'date-fns';
@@ -36,6 +37,19 @@ const formatTimeRange = (start: string | null, end: string | null) => {
 
 const ShiftTable: React.FC<ShiftTableProps> = ({ shifts, hourlyWage, calculateWorkTime, calculateSalary }) => {
     const today = new Date();
+    const tableRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const scrollToToday = () => {
+            const todayRow = document.getElementById('today-row');
+            if (todayRow && tableRef.current) {
+                todayRow.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        };
+
+        // ページ読み込み後に少し遅延を入れてスクロールを実行
+        setTimeout(scrollToToday, 100);
+    }, []);
 
     return (
         <div className="relative flex flex-col items-center space-y-4">
@@ -50,7 +64,7 @@ const ShiftTable: React.FC<ShiftTableProps> = ({ shifts, hourlyWage, calculateWo
                         </TableRow>
                     </TableHeader>
                 </Table>
-                <ScrollArea className="h-[calc(100vh-16rem)]">
+                <ScrollArea className="h-[calc(100vh-16rem)]" ref={tableRef}>
                     <Table>
                         <TableBody>
                             {shifts.map((shift, index) => {
@@ -85,7 +99,11 @@ const ShiftTable: React.FC<ShiftTableProps> = ({ shifts, hourlyWage, calculateWo
                                 }
 
                                 return (
-                                    <TableRow key={index} className={rowClass}>
+                                    <TableRow
+                                        key={index}
+                                        className={rowClass}
+                                        id={isToday ? 'today-row' : undefined}
+                                    >
                                         <TableCell className={dateCellClass}>
                                             {format(shiftDate, 'M/d')}({dayOfWeek})
                                         </TableCell>
