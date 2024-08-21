@@ -25,13 +25,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ employees }) => {
         setError(null);
 
         if (!selectedEmployeeId || !birthday) {
-            setError('従業員と誕生日を入力してください。');
+            setError('従業員と誕生日を両方入力してください。');
             return;
         }
 
         try {
             const { employee, token } = await login(selectedEmployeeId, birthday);
             localStorage.setItem('authToken', token);
+            localStorage.setItem('userData', JSON.stringify(employee));
 
             if (employee.isFirstLogin) {
                 setShowUserInfoDialog(true);
@@ -40,7 +41,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ employees }) => {
             }
         } catch (error) {
             console.error('Login failed', error);
-            setError('ログインに失敗しました。従業員IDと誕生日を確認してください。');
+            setError('ログインに失敗しました。従業員と誕生日を確認してください。');
         }
     };
 
