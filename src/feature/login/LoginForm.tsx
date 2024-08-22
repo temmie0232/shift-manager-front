@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Employee } from '@/types/employee';
 import { login, updateUserInfo } from '@/lib/api';
 import UserInfoDialog from '@/components/elements/UserInfoDialog';
+import { performLogin } from '@/lib/auth';
 
 interface LoginFormProps {
     employees: Employee[];
@@ -30,9 +31,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ employees }) => {
         }
 
         try {
-            const { employee, token } = await login(selectedEmployeeId, birthday);
-            localStorage.setItem('authToken', token);
-            localStorage.setItem('userData', JSON.stringify(employee));
+            const employee = await performLogin(selectedEmployeeId, birthday);
 
             if (employee.isFirstLogin) {
                 setShowUserInfoDialog(true);
