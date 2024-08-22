@@ -87,7 +87,8 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDates, onDateSe
                     {weekdays.map((day, index) => (
                         <button
                             key={day}
-                            className="text-center font-medium text-gray-500 mb-1 hover:bg-gray-100 rounded-md"
+                            className={`text-center font-medium mb-1 hover:bg-gray-100 rounded-md ${index === 0 ? 'text-red-500' : index === 6 ? 'text-blue-500' : 'text-gray-500'
+                                }`}
                             onClick={() => onWeekdaySelect(index)}
                         >
                             {day}
@@ -99,8 +100,10 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDates, onDateSe
                         const isSelectable = isDateSelectable(day);
                         const isFree = shiftInfo && shiftInfo.color === '#ffffff';
                         const isHoliday = shiftInfo && shiftInfo.startTime === '00:00' && shiftInfo.endTime === '00:00';
+                        const dayOfWeek = getDay(day);
+                        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
                         const textColor = isSelectable
-                            ? (isFree ? 'text-white' : 'text-gray-900')
+                            ? (isFree ? 'text-white' : isWeekend ? (dayOfWeek === 0 ? 'text-red-500' : 'text-blue-500') : 'text-gray-900')
                             : 'text-gray-400';
                         const backgroundColor = shiftInfo
                             ? (isFree ? 'rgb(0, 0, 0)' : getLighterColor(shiftInfo.color))

@@ -272,3 +272,28 @@ export async function downloadShift(): Promise<void> {
         throw error;
     }
 }
+export async function saveShiftDeadline(deadline: number): Promise<void> {
+    const response = await fetch(`${apiUrl}/api/admin/shift_deadline`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ deadline }),
+        credentials: 'include',
+    });
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to save shift deadline');
+    }
+}
+
+export async function getShiftDeadline(): Promise<number> {
+    const response = await fetch(`${apiUrl}/api/admin/shift_deadline`, {
+        headers: getHeaders(),
+        credentials: 'include',
+    });
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to get shift deadline');
+    }
+    const data = await response.json();
+    return data.deadline;
+}

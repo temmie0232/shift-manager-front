@@ -35,6 +35,13 @@ const AdminPopover: React.FC<AdminPopoverProps> = ({ children }) => {
                     >
                         シフト提出状況の確認
                     </Button>
+                    <Button
+                        variant="outline"
+                        className="w-full justify-start"
+                        onClick={() => router.push('/admin/shift_setting')}
+                    >
+                        シフト設定
+                    </Button>
                 </div>
             </PopoverContent>
         </Popover>

@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 
 import { Preset } from '@/types/preset';
-import { fetchPresets, saveTemporaryShiftRequest, loadTemporaryShiftRequest, submitShiftRequest } from '@/lib/api';
+import { fetchPresets, saveTemporaryShiftRequest, loadTemporaryShiftRequest, submitShiftRequest, getShiftDeadline } from '@/lib/api';
 import { format, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from 'date-fns';
 import CalendarSection from './CalendarSection';
 import PresetList from './PresetList';
@@ -33,6 +33,7 @@ const ShiftRequestPage: React.FC = () => {
     const [maxWorkHours, setMaxWorkHours] = useState<string>('');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [deadline, setDeadline] = useState<number | null>(null);
     const router = useRouter();
 
     useEffect(() => {
@@ -50,6 +51,9 @@ const ShiftRequestPage: React.FC = () => {
                     setMaxWorkHours(tempShiftRequest.max_work_hours?.toString() || '');
                     setSelectedDates(Object.keys(tempShiftRequest.shift_data).map(dateStr => new Date(dateStr)));
                 }
+
+                const fetchedDeadline = await getShiftDeadline();
+                setDeadline(fetchedDeadline);
             } catch (error) {
                 console.error('Failed to load data:', error);
                 setError('データの読み込みに失敗しました。もう一度お試しください。');
@@ -132,6 +136,7 @@ const ShiftRequestPage: React.FC = () => {
             });
         }
     };
+
     const handlePresetClick = (preset: Preset) => {
         setSelectedPreset(preset);
     };
@@ -226,6 +231,14 @@ const ShiftRequestPage: React.FC = () => {
         setIsConfirmDialogOpen(true);
     };
 
+    const getDeadlineText = () => {
+        if (!deadline) return '';
+        const currentDate = new Date();
+        const nextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+        const displayMonth = selectedDates.length > 0 && selectedDates[0] > nextMonth ? nextMonth.getMonth() + 2 : nextMonth.getMonth() + 1;
+        return `(締切日: ${displayMonth}月${deadline}日)`;
+    };
+
     if (isLoading) {
         return <div className="p-4">読み込み中...</div>;
     }
@@ -238,6 +251,7 @@ const ShiftRequestPage: React.FC = () => {
         <div className="flex flex-col h-[calc(100vh-8rem)] overflow-hidden">
             <div className="flex-grow overflow-hidden">
                 <div className="h-full overflow-y-auto p-4">
+                    <div className="mb-2 text-sm text-gray-600">{getDeadlineText()}</div>
                     <CalendarSection
                         selectedDates={selectedDates}
                         onDateSelect={handleDateSelect}
