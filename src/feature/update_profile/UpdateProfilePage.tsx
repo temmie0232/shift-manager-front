@@ -114,7 +114,7 @@ const UpdateProfilePage: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                     <div className="flex justify-between items-center">
-                        <p className="text-2xl font-bold">¥{hourlyWage}/時</p>
+                        <p className="text-2xl font-bold">¥ {hourlyWage} / 時</p>
                         <Button onClick={() => handleOpenDialog('wage')}>編集</Button>
                     </div>
                 </CardContent>
