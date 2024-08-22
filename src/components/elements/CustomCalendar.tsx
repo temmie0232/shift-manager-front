@@ -10,10 +10,18 @@ interface CustomCalendarProps {
     onDateSelect: (date: Date) => void;
     onWeekdaySelect: (weekday: number) => void;
     shiftData: { [key: string]: { startTime: string, endTime: string, color?: string } };
+    onMonthChange: (newMonth: Date) => void;
     className?: string;
 }
 
-const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDates, onDateSelect, onWeekdaySelect, shiftData, className }) => {
+const CustomCalendar: React.FC<CustomCalendarProps> = ({
+    selectedDates,
+    onDateSelect,
+    onWeekdaySelect,
+    shiftData,
+    onMonthChange,
+    className
+}) => {
     const today = startOfDay(new Date());
     const nextMonth = startOfMonth(addMonths(today, 1));
     const [currentMonth, setCurrentMonth] = useState(nextMonth);
@@ -28,13 +36,17 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDates, onDateSe
 
     const handleNextMonth = () => {
         if (!isNextMonthDisabled) {
-            setCurrentMonth(addMonths(currentMonth, 1));
+            const newMonth = addMonths(currentMonth, 1);
+            setCurrentMonth(newMonth);
+            onMonthChange(newMonth);
         }
     };
 
     const handlePrevMonth = () => {
         if (!isPrevMonthDisabled) {
-            setCurrentMonth(addMonths(currentMonth, -1));
+            const newMonth = addMonths(currentMonth, -1);
+            setCurrentMonth(newMonth);
+            onMonthChange(newMonth);
         }
     };
 
