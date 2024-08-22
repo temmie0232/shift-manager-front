@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, format, isSameMonth, addMonths, isBefore, isAfter, startOfDay, getDay, isSameDay } from 'date-fns';
+import React from 'react';
+import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, format, isSameMonth, isBefore, isAfter, startOfDay, getDay, isSameDay } from 'date-fns';
 import { ja } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { cn } from '@/lib/utils';
 
@@ -10,34 +9,18 @@ interface CustomCalendarProps {
     onDateSelect: (date: Date) => void;
     onWeekdaySelect: (weekday: number) => void;
     shiftData: { [key: string]: { startTime: string, endTime: string, color?: string } };
+    currentMonth: Date;
     className?: string;
 }
 
-const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDates, onDateSelect, onWeekdaySelect, shiftData, className }) => {
-    const today = startOfDay(new Date());
-    const nextMonth = startOfMonth(addMonths(today, 1));
-    const [currentMonth, setCurrentMonth] = useState(nextMonth);
-    const [isNextMonthDisabled, setIsNextMonthDisabled] = useState(false);
-    const [isPrevMonthDisabled, setIsPrevMonthDisabled] = useState(true);
-
-    useEffect(() => {
-        const twoMonthsLater = addMonths(nextMonth, 1);
-        setIsNextMonthDisabled(isSameMonth(currentMonth, twoMonthsLater));
-        setIsPrevMonthDisabled(isSameMonth(currentMonth, nextMonth));
-    }, [currentMonth, nextMonth]);
-
-    const handleNextMonth = () => {
-        if (!isNextMonthDisabled) {
-            setCurrentMonth(addMonths(currentMonth, 1));
-        }
-    };
-
-    const handlePrevMonth = () => {
-        if (!isPrevMonthDisabled) {
-            setCurrentMonth(addMonths(currentMonth, -1));
-        }
-    };
-
+const CustomCalendar: React.FC<CustomCalendarProps> = ({
+    selectedDates,
+    onDateSelect,
+    onWeekdaySelect,
+    shiftData,
+    currentMonth,
+    className
+}) => {
     const startMonth = startOfMonth(currentMonth);
     const endMonth = endOfMonth(currentMonth);
     const startDate = startOfWeek(startMonth, { weekStartsOn: 0 });
@@ -49,11 +32,7 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDates, onDateSe
 
     const isDateSelectable = (date: Date) => {
         const startOfDate = startOfDay(date);
-        return (
-            isSameMonth(startOfDate, currentMonth) &&
-            (isSameMonth(startOfDate, nextMonth) || isSameMonth(startOfDate, addMonths(nextMonth, 1))) &&
-            !isBefore(startOfDate, nextMonth)
-        );
+        return isSameMonth(startOfDate, currentMonth);
     };
 
     const getLighterColor = (color: string | undefined, factor: number = 0.9) => {
@@ -72,22 +51,15 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDates, onDateSe
     return (
         <div className={cn("bg-white rounded-lg shadow", className)}>
             <div className="p-4">
-                <div className="flex justify-between items-center mb-4">
-                    <Button onClick={handlePrevMonth} variant="ghost" size="icon" disabled={isPrevMonthDisabled}>
-                        <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <div className="text-center font-bold">
-                        {format(currentMonth, 'yyyy年M月', { locale: ja })}
-                    </div>
-                    <Button onClick={handleNextMonth} variant="ghost" size="icon" disabled={isNextMonthDisabled}>
-                        <ChevronRight className="h-4 w-4" />
-                    </Button>
+                <div className="text-center font-bold mb-4">
+                    {format(currentMonth, 'yyyy年M月', { locale: ja })}
                 </div>
                 <div className="grid grid-cols-7 gap-1">
                     {weekdays.map((day, index) => (
                         <button
                             key={day}
-                            className="text-center font-medium text-gray-500 mb-1 hover:bg-gray-100 rounded-md"
+                            className={`text-center font-medium mb-1 hover:bg-gray-100 rounded-md ${index === 0 ? 'text-red-500' : index === 6 ? 'text-blue-500' : 'text-gray-500'
+                                }`}
                             onClick={() => onWeekdaySelect(index)}
                         >
                             {day}
@@ -99,8 +71,10 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDates, onDateSe
                         const isSelectable = isDateSelectable(day);
                         const isFree = shiftInfo && shiftInfo.color === '#ffffff';
                         const isHoliday = shiftInfo && shiftInfo.startTime === '00:00' && shiftInfo.endTime === '00:00';
+                        const dayOfWeek = getDay(day);
+                        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
                         const textColor = isSelectable
-                            ? (isFree ? 'text-white' : 'text-gray-900')
+                            ? (isFree ? 'text-white' : isWeekend ? (dayOfWeek === 0 ? 'text-red-500' : 'text-blue-500') : 'text-gray-900')
                             : 'text-gray-400';
                         const backgroundColor = shiftInfo
                             ? (isFree ? 'rgb(0, 0, 0)' : getLighterColor(shiftInfo.color))

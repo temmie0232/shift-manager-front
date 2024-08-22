@@ -4,8 +4,8 @@ import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 
 import { Preset } from '@/types/preset';
-import { fetchPresets, saveTemporaryShiftRequest, loadTemporaryShiftRequest, submitShiftRequest } from '@/lib/api';
-import { format, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from 'date-fns';
+import { fetchPresets, saveTemporaryShiftRequest, loadTemporaryShiftRequest, submitShiftRequest, getShiftDeadline } from '@/lib/api';
+import { format, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths } from 'date-fns';
 import CalendarSection from './CalendarSection';
 import PresetList from './PresetList';
 import OperationDrawer from './OperationDrawer';
@@ -13,6 +13,8 @@ import ConfirmationDialog from './ConfirmationDialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import PresetSelectionDrawer from './PresetSelectionDawer';
+import { CalendarIcon } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 interface ShiftInfo {
     startTime: string;
@@ -33,6 +35,8 @@ const ShiftRequestPage: React.FC = () => {
     const [maxWorkHours, setMaxWorkHours] = useState<string>('');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [deadline, setDeadline] = useState<number | null>(null);
+    const [currentDisplayMonth, setCurrentDisplayMonth] = useState<Date>(addMonths(new Date(), 1));
     const router = useRouter();
 
     useEffect(() => {
@@ -41,8 +45,7 @@ const ShiftRequestPage: React.FC = () => {
                 const fetchedPresets = await fetchPresets();
                 setPresets(fetchedPresets);
 
-                const currentDate = new Date();
-                const nextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+                const nextMonth = addMonths(new Date(), 1);
                 const tempShiftRequest = await loadTemporaryShiftRequest(format(nextMonth, 'yyyy-MM-dd'));
                 if (tempShiftRequest) {
                     setShiftData(tempShiftRequest.shift_data);
@@ -50,6 +53,11 @@ const ShiftRequestPage: React.FC = () => {
                     setMaxWorkHours(tempShiftRequest.max_work_hours?.toString() || '');
                     setSelectedDates(Object.keys(tempShiftRequest.shift_data).map(dateStr => new Date(dateStr)));
                 }
+
+                const fetchedDeadline = await getShiftDeadline();
+                setDeadline(fetchedDeadline);
+
+                setCurrentDisplayMonth(nextMonth);
             } catch (error) {
                 console.error('Failed to load data:', error);
                 setError('データの読み込みに失敗しました。もう一度お試しください。');
@@ -89,11 +97,9 @@ const ShiftRequestPage: React.FC = () => {
 
     const handleWeekdaySelect = (weekday: number) => {
         if (selectedPreset) {
-            const currentDate = new Date();
-            const nextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
-            const startOfNextMonth = startOfMonth(nextMonth);
-            const endOfNextMonth = endOfMonth(nextMonth);
-            const daysInMonth = eachDayOfInterval({ start: startOfNextMonth, end: endOfNextMonth });
+            const startOfCurrentMonth = startOfMonth(currentDisplayMonth);
+            const endOfCurrentMonth = endOfMonth(currentDisplayMonth);
+            const daysInMonth = eachDayOfInterval({ start: startOfCurrentMonth, end: endOfCurrentMonth });
 
             const selectedDays = daysInMonth.filter(day => getDay(day) === weekday);
 
@@ -132,16 +138,15 @@ const ShiftRequestPage: React.FC = () => {
             });
         }
     };
+
     const handlePresetClick = (preset: Preset) => {
         setSelectedPreset(preset);
     };
 
     const handleSave = async () => {
         try {
-            const currentDate = new Date();
-            const nextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
             await saveTemporaryShiftRequest(
-                format(nextMonth, 'yyyy-MM-dd'),
+                format(currentDisplayMonth, 'yyyy-MM-dd'),
                 shiftData,
                 parseFloat(minWorkHours),
                 parseFloat(maxWorkHours)
@@ -160,9 +165,7 @@ const ShiftRequestPage: React.FC = () => {
             description: '現在加えた変更が破棄され、以前の保存地点まで作業内容が戻ってしまいますがよろしいですか？',
             action: async () => {
                 try {
-                    const currentDate = new Date();
-                    const nextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
-                    const tempShiftRequest = await loadTemporaryShiftRequest(format(nextMonth, 'yyyy-MM-dd'));
+                    const tempShiftRequest = await loadTemporaryShiftRequest(format(currentDisplayMonth, 'yyyy-MM-dd'));
                     if (tempShiftRequest) {
                         setShiftData(tempShiftRequest.shift_data);
                         setMinWorkHours(tempShiftRequest.min_work_hours?.toString() || '');
@@ -206,10 +209,8 @@ const ShiftRequestPage: React.FC = () => {
             description: '現在の内容でシフトを提出します。よろしいですか？',
             action: async () => {
                 try {
-                    const currentDate = new Date();
-                    const nextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
                     await submitShiftRequest(
-                        format(nextMonth, 'yyyy-MM-dd'),
+                        format(currentDisplayMonth, 'yyyy-MM-dd'),
                         shiftData,
                         parseFloat(minWorkHours),
                         parseFloat(maxWorkHours)
@@ -226,6 +227,14 @@ const ShiftRequestPage: React.FC = () => {
         setIsConfirmDialogOpen(true);
     };
 
+    const getDeadlineText = () => {
+        if (!deadline) return null;
+        const displayMonth = currentDisplayMonth.getMonth(); // 0-indexed
+        const deadlineMonth = displayMonth === 0 ? 12 : displayMonth; // 1月の場合は12月を表示
+        const deadlineMonthName = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'][deadlineMonth - 1];
+        return `${deadlineMonthName}月${deadline}日`;
+    };
+
     if (isLoading) {
         return <div className="p-4">読み込み中...</div>;
     }
@@ -238,11 +247,20 @@ const ShiftRequestPage: React.FC = () => {
         <div className="flex flex-col h-[calc(100vh-8rem)] overflow-hidden">
             <div className="flex-grow overflow-hidden">
                 <div className="h-full overflow-y-auto p-4">
+                    {getDeadlineText() && (
+                        <div className="mb-4 flex items-center justify-center">
+                            <Badge variant="secondary" className="px-4 py-2 text-base font-medium">
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                提出締切日: {getDeadlineText()}
+                            </Badge>
+                        </div>
+                    )}
                     <CalendarSection
                         selectedDates={selectedDates}
                         onDateSelect={handleDateSelect}
                         onWeekdaySelect={handleWeekdaySelect}
                         shiftData={shiftData}
+                        currentDisplayMonth={currentDisplayMonth}
                     />
                     <div className="mt-4 space-y-2">
                         <Label>希望勤務時間</Label>
@@ -253,7 +271,7 @@ const ShiftRequestPage: React.FC = () => {
                                 step="0.5"
                                 value={minWorkHours}
                                 onChange={(e) => setMinWorkHours(e.target.value)}
-                                placeholder="最小"
+                                placeholder="最低"
                                 className="w-24"
                             />
                             <span>～</span>
@@ -263,7 +281,7 @@ const ShiftRequestPage: React.FC = () => {
                                 step="0.5"
                                 value={maxWorkHours}
                                 onChange={(e) => setMaxWorkHours(e.target.value)}
-                                placeholder="最大"
+                                placeholder="最高"
                                 className="w-24"
                             />
                             <span>時間</span>

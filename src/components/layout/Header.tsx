@@ -5,6 +5,7 @@ import { GrUserAdmin } from 'react-icons/gr';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import AdminPopover from '../elements/AdminPopover';
+import { Separator } from '../ui/separator';
 
 const Header: React.FC = () => {
     const router = useRouter();
@@ -42,6 +43,14 @@ const Header: React.FC = () => {
                 return 'チャット';
             case '/status_check':
                 return 'ステータス確認';
+            case '/update_profile':
+                return '情報の更新';
+            case '/admin/shift_upload':
+                return 'シフトの更新';
+            case '/admin/shift_submission_status':
+                return 'シフトの提出状況';
+            case '/admin/shift_setting':
+                return 'シフト設定';
             default:
                 return '';
         }
@@ -68,12 +77,22 @@ const Header: React.FC = () => {
                     </Button>
                 </SheetTrigger>
                 <SheetContent side="left">
-                    <nav className="flex flex-col space-y-4">
+                    <nav className="flex flex-col space-y-1">
+                        <Separator className='mt-8' />
                         <Button variant="ghost" onClick={() => router.push('/schedule')}>スケジュール確認</Button>
+                        <Separator />
                         <Button variant="ghost" onClick={() => router.push('/shift_request')}>希望シフト提出</Button>
+                        <Separator />
                         <Button variant="ghost" onClick={() => router.push('/preset_creation')}>パターンの作成</Button>
+                        <Separator />
+                        {/*
                         <Button variant="ghost" onClick={() => router.push('/chat')}>チャット</Button>
+                        <Separator />
                         <Button variant="ghost" onClick={() => router.push('/status_check')}>給与確認</Button>
+                        <Separator />
+                        */}
+                        <Button variant="ghost" onClick={() => router.push('/update_profile')}>情報の更新</Button>
+                        <Separator />
                     </nav>
                 </SheetContent>
             </Sheet>

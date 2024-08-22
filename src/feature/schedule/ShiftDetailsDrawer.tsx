@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "@/components/ui/drawer";
+import { Separator } from '@/components/ui/separator';
 
 interface ShiftDetailsDrawerProps {
     isOpen: boolean;
@@ -28,7 +29,7 @@ const ShiftDetailsDrawer: React.FC<ShiftDetailsDrawerProps> = ({
                 <DrawerHeader>
                     <DrawerTitle>今月のシフト詳細</DrawerTitle>
                 </DrawerHeader>
-                <div className="p-4 space-y-4">
+                <div className="p-4 space-y-5">
                     <Card>
                         <CardHeader>
                             <CardTitle>出勤日数</CardTitle>
@@ -54,6 +55,7 @@ const ShiftDetailsDrawer: React.FC<ShiftDetailsDrawerProps> = ({
                         </CardContent>
                     </Card>
                 </div>
+                <Separator />
                 <DrawerFooter>
                     <Button onClick={onDownload} className="w-full">
                         シフトをダウンロード
