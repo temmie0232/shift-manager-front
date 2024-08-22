@@ -16,8 +16,8 @@ const AdminPopover: React.FC<AdminPopoverProps> = ({ children }) => {
                 {children}
             </PopoverTrigger>
             <PopoverContent className="w-56">
-                <div className="grid gap-4">
-                    <h4 className="font-medium leading-none">管理者メニュー</h4>
+                <div className="grid gap-3">
+                    <h4 className="font-medium leading-none !my-3">管理者メニュー</h4>
                     <Button
                         variant="outline"
                         className="w-full justify-start"
@@ -28,7 +28,11 @@ const AdminPopover: React.FC<AdminPopoverProps> = ({ children }) => {
                     <Button variant="outline" className="w-full justify-start">
                         シフト作成
                     </Button>
-                    <Button variant="outline" className="w-full justify-start">
+                    <Button
+                        variant="outline"
+                        className="w-full justify-start"
+                        onClick={() => router.push('/admin/shift_submission_status')}
+                    >
                         シフト提出状況の確認
                     </Button>
                 </div>
