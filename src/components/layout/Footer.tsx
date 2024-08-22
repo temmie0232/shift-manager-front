@@ -7,6 +7,7 @@ import { FaCalendarAlt, FaEdit } from 'react-icons/fa';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { HiOutlineCurrencyYen } from "react-icons/hi";
 import { MdOutlinePublishedWithChanges } from "react-icons/md";
+import { IoMdInformationCircleOutline } from "react-icons/io";
 
 const Footer: React.FC = () => {
     const router = useRouter();
@@ -51,6 +52,7 @@ const Footer: React.FC = () => {
                     >
                         <MdOutlinePublishedWithChanges size={getIconSize('preset_creation')} />
                     </TabsTrigger>
+                    {/*
                     <TabsTrigger
                         value="chat"
                         onClick={() => handleNavigation('/chat')}
@@ -64,6 +66,14 @@ const Footer: React.FC = () => {
                         className={`flex flex-col items-center ${currentTab === 'status_check' ? 'text-zinc-950' : ''}`}
                     >
                         <HiOutlineCurrencyYen size={getIconSize('status_check')} />
+                    </TabsTrigger>
+                    */}
+                    <TabsTrigger
+                        value="update_profile"
+                        onClick={() => handleNavigation('/update_profile')}
+                        className={`flex flex-col items-center ${currentTab === 'update_profile' ? 'text-zinc-950' : ''}`}
+                    >
+                        <IoMdInformationCircleOutline size={getIconSize('update_profile')} />
                     </TabsTrigger>
                 </TabsList>
             </Tabs>

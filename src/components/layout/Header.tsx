@@ -43,6 +43,14 @@ const Header: React.FC = () => {
                 return 'チャット';
             case '/status_check':
                 return 'ステータス確認';
+            case '/update_profile':
+                return '情報の更新';
+            case '/admin/shift_upload':
+                return 'シフトの更新';
+            case '/admin/shift_submission_status':
+                return 'シフトの提出状況';
+            case '/admin/shift_setting':
+                return 'シフト設定';
             default:
                 return '';
         }
@@ -77,9 +85,13 @@ const Header: React.FC = () => {
                         <Separator />
                         <Button variant="ghost" onClick={() => router.push('/preset_creation')}>パターンの作成</Button>
                         <Separator />
+                        {/*
                         <Button variant="ghost" onClick={() => router.push('/chat')}>チャット</Button>
                         <Separator />
                         <Button variant="ghost" onClick={() => router.push('/status_check')}>給与確認</Button>
+                        <Separator />
+                        */}
+                        <Button variant="ghost" onClick={() => router.push('/update_profile')}>情報の更新</Button>
                         <Separator />
                     </nav>
                 </SheetContent>

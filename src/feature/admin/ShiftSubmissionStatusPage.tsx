@@ -49,7 +49,6 @@ const ShiftSubmissionStatusPage = () => {
 
     return (
         <div className="p-4">
-            <h1 className="text-2xl font-bold mb-4">シフト提出状況</h1>
             <ScrollArea className="h-[calc(100vh-12rem)]">
                 <div className="space-y-2">
                     {employees.map((employee) => (
