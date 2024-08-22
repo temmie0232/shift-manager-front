@@ -6,7 +6,7 @@ interface CalendarSectionProps {
     onDateSelect: (date: Date) => void;
     onWeekdaySelect: (weekday: number) => void;
     shiftData: { [key: string]: { startTime: string; endTime: string; color?: string } };
-    onMonthChange: (newMonth: Date) => void;
+    currentDisplayMonth: Date;
 }
 
 const CalendarSection: React.FC<CalendarSectionProps> = ({
@@ -14,14 +14,14 @@ const CalendarSection: React.FC<CalendarSectionProps> = ({
     onDateSelect,
     onWeekdaySelect,
     shiftData,
-    onMonthChange,
+    currentDisplayMonth,
 }) => (
     <CustomCalendar
         selectedDates={selectedDates}
         onDateSelect={onDateSelect}
         onWeekdaySelect={onWeekdaySelect}
         shiftData={shiftData}
-        onMonthChange={onMonthChange}
+        currentMonth={currentDisplayMonth}
         className="border border-gray-200 rounded-lg shadow-sm mb-4"
     />
 );

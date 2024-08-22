@@ -36,7 +36,7 @@ const ShiftRequestPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [deadline, setDeadline] = useState<number | null>(null);
-    const [currentDisplayMonth, setCurrentDisplayMonth] = useState<Date>(new Date());
+    const [currentDisplayMonth, setCurrentDisplayMonth] = useState<Date>(addMonths(new Date(), 1));
     const router = useRouter();
 
     useEffect(() => {
@@ -45,8 +45,7 @@ const ShiftRequestPage: React.FC = () => {
                 const fetchedPresets = await fetchPresets();
                 setPresets(fetchedPresets);
 
-                const currentDate = new Date();
-                const nextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+                const nextMonth = addMonths(new Date(), 1);
                 const tempShiftRequest = await loadTemporaryShiftRequest(format(nextMonth, 'yyyy-MM-dd'));
                 if (tempShiftRequest) {
                     setShiftData(tempShiftRequest.shift_data);
@@ -228,12 +227,6 @@ const ShiftRequestPage: React.FC = () => {
         setIsConfirmDialogOpen(true);
     };
 
-    const handleMonthChange = (newMonth: Date) => {
-        setCurrentDisplayMonth(newMonth);
-        // 締切日の表示を強制的に更新
-        setDeadline(prevDeadline => prevDeadline);
-    };
-
     const getDeadlineText = () => {
         if (!deadline) return null;
         const displayMonth = currentDisplayMonth.getMonth(); // 0-indexed
@@ -258,7 +251,7 @@ const ShiftRequestPage: React.FC = () => {
                         <div className="mb-4 flex items-center justify-center">
                             <Badge variant="secondary" className="px-4 py-2 text-base font-medium">
                                 <CalendarIcon className="mr-2 h-4 w-4" />
-                                締切日: {getDeadlineText()}
+                                提出締切日: {getDeadlineText()}
                             </Badge>
                         </div>
                     )}
@@ -267,7 +260,7 @@ const ShiftRequestPage: React.FC = () => {
                         onDateSelect={handleDateSelect}
                         onWeekdaySelect={handleWeekdaySelect}
                         shiftData={shiftData}
-                        onMonthChange={handleMonthChange}
+                        currentDisplayMonth={currentDisplayMonth}
                     />
                     <div className="mt-4 space-y-2">
                         <Label>希望勤務時間</Label>
