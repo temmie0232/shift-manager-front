@@ -1,9 +1,10 @@
+import UpdateProfilePage from '@/feature/update_profile/UpdateProfilePage'
 import React from 'react'
 
-const page = () => {
+const Page = () => {
     return (
-        <div>page</div>
+        <UpdateProfilePage />
     )
 }
 
-export default page
+export default Page
