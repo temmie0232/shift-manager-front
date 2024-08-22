@@ -21,6 +21,8 @@ function getHeaders() {
 }
 
 export async function login(employeeId: string, birthday: string): Promise<{ employee: Employee; token: string }> {
+    console.log('Attempting login with:', { employeeId, birthday }); // Debug log
+
     const response = await fetch(`${apiUrl}/api/login`, {
         method: 'POST',
         headers: {
@@ -29,17 +31,28 @@ export async function login(employeeId: string, birthday: string): Promise<{ emp
         body: JSON.stringify({ employeeId, birthday }),
         credentials: 'include',
     });
+
+    console.log('Login response status:', response.status); // Debug log
+
     if (!response.ok) {
         const errorData = await response.json();
+        console.error('Login error:', errorData); // Debug log
         throw new Error(errorData.message || 'Login failed');
     }
+
     const data = await response.json();
+    console.log('Login successful, received data:', data); // Debug log
+
     setAuthToken(data.token);
 
-    // Store user data in localStorage
-    localStorage.setItem('userData', JSON.stringify(data.employee));
+    // Determine if this is the first login
+    const isFirstLogin = !data.employee.hourly_wage || !data.employee.skills || data.employee.skills.length === 0;
 
-    return data;
+    // Store user data in localStorage with isFirstLogin
+    const userData = { ...data.employee, isFirstLogin };
+    localStorage.setItem('userData', JSON.stringify(userData));
+
+    return { ...data, employee: userData };
 }
 
 export async function fetchEmployees(): Promise<Employee[]> {
@@ -163,11 +176,9 @@ export async function loadTemporaryShiftRequest(date: string): Promise<any> {
         credentials: 'include',
     });
     if (!response.ok) {
-        if (response.status === 404) {
-            return null;
-        }
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to load temporary shift request');
+        console.error('Failed to load temporary shift request:', errorData);
+        return null;
     }
     return response.json();
 }
@@ -221,4 +232,43 @@ export async function uploadShiftFiles(pdfFiles: File[], csvFile: File | null): 
 
     const responseData = await response.json();
     console.log('Response data:', responseData);
+}
+
+export async function updateUserInfo(hourlyWage: number, skills: string[]): Promise<void> {
+    const response = await fetch(`${apiUrl}/api/user/update_info`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ hourly_wage: hourlyWage, skills }),
+        credentials: 'include',
+    });
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update user info');
+    }
+}
+
+export async function downloadShift(): Promise<void> {
+    try {
+        const response = await fetch(`${apiUrl}/api/download_shift`, {
+            headers: getHeaders(),
+            credentials: 'include',
+        });
+
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'current_shift.pdf';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+        } else {
+            throw new Error('Failed to download shift');
+        }
+    } catch (error) {
+        console.error('Download error:', error);
+        throw error;
+    }
 }

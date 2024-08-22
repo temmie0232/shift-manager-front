@@ -3,4 +3,7 @@ export type Employee = {
     name: string;
     type: string;
     birthday: string;
+    hourly_wage?: number;
+    skills?: string[];
+    isFirstLogin?: boolean;
 };
