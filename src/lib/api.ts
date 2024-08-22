@@ -297,3 +297,49 @@ export async function getShiftDeadline(): Promise<number> {
     const data = await response.json();
     return data.deadline;
 }
+export async function uploadCurrentMonthShift(pdfFile: File | null, csvFile: File | null): Promise<void> {
+    await uploadShift('current', pdfFile, csvFile);
+}
+
+export async function uploadNextMonthShift(pdfFile: File | null, csvFile: File | null): Promise<void> {
+    await uploadShift('next', pdfFile, csvFile);
+}
+
+async function uploadShift(type: 'current' | 'next', pdfFile: File | null, csvFile: File | null): Promise<void> {
+    const formData = new FormData();
+
+    if (pdfFile) {
+        formData.append('pdf_file', pdfFile);
+    }
+
+    if (csvFile) {
+        formData.append('csv_file', csvFile);
+    }
+
+    const headers = getHeaders();
+    delete headers['Content-Type']; // Let the browser set the correct content type for FormData
+
+    const endpoint = type === 'current' ? 'upload_current_month_shift' : 'upload_next_month_shift';
+    const response = await fetch(`${apiUrl}/api/admin/${endpoint}`, {
+        method: 'POST',
+        headers: headers,
+        body: formData,
+        credentials: 'include',
+    });
+
+    if (!response.ok) {
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.indexOf("application/json") !== -1) {
+            const errorData = await response.json();
+            console.error('Upload error:', errorData);
+            throw new Error(errorData.error || 'Failed to upload shift files');
+        } else {
+            const errorText = await response.text();
+            console.error('Upload error (non-JSON):', errorText);
+            throw new Error('Server error occurred');
+        }
+    }
+
+    const responseData = await response.json();
+    console.log('Response data:', responseData);
+}
