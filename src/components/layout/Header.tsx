@@ -5,6 +5,7 @@ import { GrUserAdmin } from 'react-icons/gr';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import AdminPopover from '../elements/AdminPopover';
+import { Separator } from '../ui/separator';
 
 const Header: React.FC = () => {
     const router = useRouter();
@@ -68,12 +69,18 @@ const Header: React.FC = () => {
                     </Button>
                 </SheetTrigger>
                 <SheetContent side="left">
-                    <nav className="flex flex-col space-y-4">
+                    <nav className="flex flex-col space-y-1">
+                        <Separator className='mt-8' />
                         <Button variant="ghost" onClick={() => router.push('/schedule')}>スケジュール確認</Button>
+                        <Separator />
                         <Button variant="ghost" onClick={() => router.push('/shift_request')}>希望シフト提出</Button>
+                        <Separator />
                         <Button variant="ghost" onClick={() => router.push('/preset_creation')}>パターンの作成</Button>
+                        <Separator />
                         <Button variant="ghost" onClick={() => router.push('/chat')}>チャット</Button>
+                        <Separator />
                         <Button variant="ghost" onClick={() => router.push('/status_check')}>給与確認</Button>
+                        <Separator />
                     </nav>
                 </SheetContent>
             </Sheet>

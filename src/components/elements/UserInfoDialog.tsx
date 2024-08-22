@@ -137,7 +137,8 @@ const UserInfoDialog: React.FC<UserInfoDialogProps> = ({ isOpen, onClose }) => {
                         <p className="text-sm text-gray-500">
                             以下の項目から<br />
                             あなたができる仕事にチェックを付けてください。<br />
-                            できない仕事は、チェックを外してください。
+                            できない仕事は、チェックを外してください。 <br />
+                            !! シフトの生成に影響します !!
                         </p>
                         {renderSkillGroup('opening_closing', 'オープン・クローズ作業')}
                         {renderSkillGroup('inventory', '在庫管理')}

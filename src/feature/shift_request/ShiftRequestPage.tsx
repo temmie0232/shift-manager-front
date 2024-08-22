@@ -271,7 +271,7 @@ const ShiftRequestPage: React.FC = () => {
                                 step="0.5"
                                 value={minWorkHours}
                                 onChange={(e) => setMinWorkHours(e.target.value)}
-                                placeholder="最小"
+                                placeholder="最低"
                                 className="w-24"
                             />
                             <span>～</span>
@@ -281,7 +281,7 @@ const ShiftRequestPage: React.FC = () => {
                                 step="0.5"
                                 value={maxWorkHours}
                                 onChange={(e) => setMaxWorkHours(e.target.value)}
-                                placeholder="最大"
+                                placeholder="最高"
                                 className="w-24"
                             />
                             <span>時間</span>
