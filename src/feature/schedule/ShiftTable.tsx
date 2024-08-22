@@ -2,7 +2,7 @@
 import React, { useEffect, useRef } from 'react';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { format, isSameDay, isWeekend, getDay, isBefore } from 'date-fns';
+import { format, isSameDay, isWeekend, getDay, isBefore, startOfDay } from 'date-fns';
 import { ja } from 'date-fns/locale';
 
 interface Shift {
@@ -36,7 +36,7 @@ const formatTimeRange = (start: string | null, end: string | null) => {
 };
 
 const ShiftTable: React.FC<ShiftTableProps> = ({ shifts, hourlyWage, calculateWorkTime, calculateSalary }) => {
-    const today = new Date();
+    const today = startOfDay(new Date());
     const tableRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -68,7 +68,7 @@ const ShiftTable: React.FC<ShiftTableProps> = ({ shifts, hourlyWage, calculateWo
                     <Table>
                         <TableBody>
                             {shifts.map((shift, index) => {
-                                const shiftDate = new Date(shift.date);
+                                const shiftDate = startOfDay(new Date(shift.date));
                                 const dayOfWeek = format(shiftDate, 'EEE', { locale: ja });
                                 const workTime = shift.work_type === '勤務'
                                     ? calculateWorkTime(shift.start_time, shift.end_time)
@@ -84,10 +84,10 @@ const ShiftTable: React.FC<ShiftTableProps> = ({ shifts, hourlyWage, calculateWo
                                 let rowClass = '';
                                 let dateCellClass = 'text-center';
 
-                                if (isPastDay) {
+                                if (isToday) {
+                                    rowClass = 'bg-green-100 border-y-2 border-green-500';
+                                } else if (isPastDay) {
                                     rowClass = 'bg-gray-300';
-                                } else if (isToday) {
-                                    rowClass = 'bg-green-100 border-y-2  border-green-500';
                                 }
 
                                 if (isWeekendDay || isSundayOrHoliday) {
