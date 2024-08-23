@@ -210,18 +210,30 @@ const ShiftRequestPage: React.FC = () => {
             description: '現在の内容でシフトを提出します。よろしいですか？',
             action: async () => {
                 try {
+                    // 一時保存を実行
+                    await saveTemporaryShiftRequest(
+                        format(currentDisplayMonth, 'yyyy-MM-dd'),
+                        shiftData,
+                        parseFloat(minWorkHours),
+                        parseFloat(maxWorkHours)
+                    );
+
+                    // シフト希望を提出
                     await submitShiftRequest(
                         format(currentDisplayMonth, 'yyyy-MM-dd'),
                         shiftData,
                         parseFloat(minWorkHours),
                         parseFloat(maxWorkHours)
                     );
-                    console.log('Shift request submitted:', shiftData);
+
+                    console.log('Shift request submitted and saved:', shiftData);
                     setIsDrawerOpen(false);
-                    // TODO: Show success message and maybe redirect
+                    // 成功メッセージを表示
+                    setError('シフト希望が正常に提出され、保存されました。');
+                    // TODO: 成功後の追加のアクション
                 } catch (error) {
-                    console.error('Failed to submit shift request:', error);
-                    setError('シフト希望の提出に失敗しました。もう一度お試しください。');
+                    console.error('Failed to submit or save shift request:', error);
+                    setError('シフト希望の提出または保存に失敗しました。もう一度お試しください。');
                 }
             }
         });
