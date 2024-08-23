@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import PresetSelectionDrawer from './PresetSelectionDawer';
 import { CalendarIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import SubmittedShiftStatus from './SubmittedShiftStatus';
 
 interface ShiftInfo {
     startTime: string;
@@ -262,7 +263,7 @@ const ShiftRequestPage: React.FC = () => {
                         shiftData={shiftData}
                         currentDisplayMonth={currentDisplayMonth}
                     />
-                    <div className="mt-4 space-y-2">
+                    <div className="my-4 space-y-2">
                         <Label>希望勤務時間</Label>
                         <div className="flex items-center space-x-2">
                             <Input
@@ -287,6 +288,7 @@ const ShiftRequestPage: React.FC = () => {
                             <span>時間</span>
                         </div>
                     </div>
+                    <SubmittedShiftStatus currentMonth={currentDisplayMonth} />
                 </div>
             </div>
             <div className="p-4 space-y-2 bg-white">

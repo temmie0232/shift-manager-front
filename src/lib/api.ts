@@ -343,3 +343,15 @@ async function uploadShift(type: 'current' | 'next', pdfFile: File | null, csvFi
     const responseData = await response.json();
     console.log('Response data:', responseData);
 }
+
+export async function getSubmittedShift(date: string): Promise<{ [key: string]: { startTime: string, endTime: string, color?: string } } | null> {
+    const response = await fetch(`${apiUrl}/api/shift_requests/submitted?date=${date}`, {
+        headers: getHeaders(),
+        credentials: 'include',
+    });
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch submitted shift');
+    }
+    return response.json();
+}
