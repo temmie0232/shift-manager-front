@@ -16,6 +16,7 @@ import PresetSelectionDrawer from './PresetSelectionDawer';
 import { CalendarIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import SubmittedShiftStatus from './SubmittedShiftStatus';
+import { toast, useToast } from '@/components/ui/use-toast';
 
 interface ShiftInfo {
     startTime: string;
@@ -38,6 +39,8 @@ const ShiftRequestPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [deadline, setDeadline] = useState<number | null>(null);
     const [currentDisplayMonth, setCurrentDisplayMonth] = useState<Date>(addMonths(new Date(), 1));
+    const [isShiftSubmitted, setIsShiftSubmitted] = useState(false);
+    const { toast } = useToast();
     const router = useRouter();
 
     useEffect(() => {
@@ -228,17 +231,30 @@ const ShiftRequestPage: React.FC = () => {
 
                     console.log('Shift request submitted and saved:', shiftData);
                     setIsDrawerOpen(false);
-                    // 成功メッセージを表示
-                    setError('シフト希望が正常に提出され、保存されました。');
-                    // TODO: 成功後の追加のアクション
+                    setIsShiftSubmitted(true); // シフト提出状態を更新
+
+                    // Toastで成功メッセージを表示
+                    toast({
+                        title: "成功",
+                        description: "シフト希望が正常に提出され、保存されました。",
+                        duration: 3000,
+                    });
                 } catch (error) {
                     console.error('Failed to submit or save shift request:', error);
-                    setError('シフト希望の提出または保存に失敗しました。もう一度お試しください。');
+
+                    // Toastでエラーメッセージを表示
+                    toast({
+                        title: "エラー",
+                        description: "シフト希望の提出または保存に失敗しました。もう一度お試しください。",
+                        variant: "destructive",
+                        duration: 3000,
+                    });
                 }
             }
         });
         setIsConfirmDialogOpen(true);
     };
+
 
     const getDeadlineText = () => {
         if (!deadline) return null;
@@ -300,7 +316,7 @@ const ShiftRequestPage: React.FC = () => {
                             <span>時間</span>
                         </div>
                     </div>
-                    <SubmittedShiftStatus currentMonth={currentDisplayMonth} />
+                    <SubmittedShiftStatus currentMonth={currentDisplayMonth} isShiftSubmitted={isShiftSubmitted} />
                 </div>
             </div>
             <div className="p-4 space-y-2 bg-white">

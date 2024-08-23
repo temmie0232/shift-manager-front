@@ -7,9 +7,10 @@ import { getSubmittedShift } from '@/lib/api';
 
 interface SubmittedShiftStatusProps {
     currentMonth: Date;
+    isShiftSubmitted: boolean;
 }
 
-const SubmittedShiftStatus: React.FC<SubmittedShiftStatusProps> = ({ currentMonth }) => {
+const SubmittedShiftStatus: React.FC<SubmittedShiftStatusProps> = ({ currentMonth, isShiftSubmitted }) => {
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [submittedShiftData, setSubmittedShiftData] = useState<{ [key: string]: { startTime: string, endTime: string, color?: string } }>({});
@@ -31,7 +32,7 @@ const SubmittedShiftStatus: React.FC<SubmittedShiftStatusProps> = ({ currentMont
         };
 
         fetchSubmittedShift();
-    }, [currentMonth]);
+    }, [currentMonth, isShiftSubmitted]); // isShiftSubmitted を依存配列に追加
 
     return (
         <div className="mt-4 p-4 bg-white rounded-lg shadow">
