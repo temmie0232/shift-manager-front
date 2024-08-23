@@ -100,7 +100,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ employees }) => {
             <UserInfoDialog
                 isOpen={showUserInfoDialog}
                 onClose={handleUserInfoSubmit}
-                dialogType={dialogType}
             />
         </>
     );

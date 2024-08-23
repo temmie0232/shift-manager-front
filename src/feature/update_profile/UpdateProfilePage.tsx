@@ -142,7 +142,6 @@ const UpdateProfilePage: React.FC = () => {
                 isOpen={isDialogOpen}
                 onClose={handleUpdateInfo}
                 initialData={{ hourlyWage, skills }}
-                dialogType={dialogType}
             />
         </div>
     );

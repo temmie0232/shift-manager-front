@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -18,7 +18,6 @@ interface UserInfoDialogProps {
     isOpen: boolean;
     onClose: (data: UserInfo | null) => void;
     initialData?: { hourlyWage: number; skills: string[] };
-    dialogType: 'wage' | 'skills';
 }
 
 interface UserInfo {
@@ -42,29 +41,27 @@ const SKILLS = [
     { id: 'food', label: 'フード', group: 'operations' },
 ];
 
-const UserInfoDialog: React.FC<UserInfoDialogProps> = ({ isOpen, onClose, initialData, dialogType }) => {
+const UserInfoDialog: React.FC<UserInfoDialogProps> = ({ isOpen, onClose, initialData }) => {
     const [hourlyWage, setHourlyWage] = useState<string>(initialData?.hourlyWage.toString() || '');
-    const [skills, setSkills] = useState<string[]>(initialData?.skills || SKILLS.flatMap(skill =>
-        skill.children ? [skill.id, ...skill.children.map(child => child.id)] : [skill.id]
-    ));
+    const [skills, setSkills] = useState<string[]>(initialData?.skills || []);
     const [error, setError] = useState<string | null>(null);
 
-    const handleSubmit = () => {
-        if (dialogType === 'wage') {
-            if (!hourlyWage || isNaN(parseFloat(hourlyWage))) {
-                setError('時給を正しく入力してください。');
-                return;
-            }
-            onClose({
-                hourlyWage: parseFloat(hourlyWage),
-                skills: initialData?.skills || [],
-            });
-        } else {
-            onClose({
-                hourlyWage: initialData?.hourlyWage || 0,
-                skills,
-            });
+    useEffect(() => {
+        if (isOpen && initialData) {
+            setHourlyWage(initialData.hourlyWage.toString());
+            setSkills(initialData.skills);
         }
+    }, [isOpen, initialData]);
+
+    const handleSubmit = () => {
+        if (!hourlyWage || isNaN(parseFloat(hourlyWage))) {
+            setError('時給を正しく入力してください。');
+            return;
+        }
+        onClose({
+            hourlyWage: parseFloat(hourlyWage),
+            skills,
+        });
     };
 
     const handleSkillChange = (skillId: string, checked: boolean) => {
@@ -111,47 +108,43 @@ const UserInfoDialog: React.FC<UserInfoDialogProps> = ({ isOpen, onClose, initia
         <Dialog open={isOpen} onOpenChange={() => onClose(null)}>
             <DialogContent className="max-w-md">
                 <DialogHeader>
-                    <DialogTitle>{dialogType === 'wage' ? '時給の更新' : 'スキルの更新'}</DialogTitle>
+                    <DialogTitle>ユーザー情報の更新</DialogTitle>
                     <DialogDescription>
-                        {dialogType === 'wage'
-                            ? 'あなたの新しい時給を入力してください。'
-                            : 'あなたができる仕事内容を選択してください。'}
+                        時給とできる仕事内容を入力してください。
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
-                    {dialogType === 'wage' ? (
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="hourly-wage" className="text-right">
-                                時給
-                            </Label>
-                            <div className="col-span-3 flex items-center">
-                                <Input
-                                    id="hourly-wage"
-                                    type="number"
-                                    value={hourlyWage}
-                                    onChange={(e) => {
-                                        setHourlyWage(e.target.value);
-                                        setError(null);
-                                    }}
-                                    className="flex-grow"
-                                />
-                                <span className="ml-2">円</span>
-                            </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="hourly-wage" className="text-right">
+                            時給
+                        </Label>
+                        <div className="col-span-3 flex items-center">
+                            <Input
+                                id="hourly-wage"
+                                type="number"
+                                value={hourlyWage}
+                                onChange={(e) => {
+                                    setHourlyWage(e.target.value);
+                                    setError(null);
+                                }}
+                                className="flex-grow"
+                            />
+                            <span className="ml-2">円</span>
                         </div>
-                    ) : (
-                        <div className="space-y-4">
-                            <Label className="text-lg font-semibold">できる仕事内容</Label>
-                            <p className="text-sm text-gray-500">
-                                以下の項目から<br />
-                                あなたができる仕事にチェックを付けてください。<br />
-                                できない仕事は、チェックを外してください。 <br />
-                                !! シフトの生成に影響します !!
-                            </p>
-                            {renderSkillGroup('opening_closing', 'オープン・クローズ作業')}
-                            {renderSkillGroup('inventory', '在庫管理')}
-                            {renderSkillGroup('operations', '店内オペレーション')}
-                        </div>
-                    )}
+                    </div>
+                    <Separator />
+                    <div className="space-y-4">
+                        <Label className="text-lg font-semibold">できる仕事内容</Label>
+                        <p className="text-sm text-gray-500">
+                            以下の項目から<br />
+                            あなたができる仕事にチェックを付けてください。<br />
+                            できない仕事は、チェックを外してください。 <br />
+                            !! シフトの生成に影響します !!
+                        </p>
+                        {renderSkillGroup('opening_closing', 'オープン・クローズ作業')}
+                        {renderSkillGroup('inventory', '在庫管理')}
+                        {renderSkillGroup('operations', '店内オペレーション')}
+                    </div>
                     {error && (
                         <Alert variant="destructive">
                             <AlertDescription>{error}</AlertDescription>
