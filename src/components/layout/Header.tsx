@@ -14,6 +14,7 @@ const Header: React.FC = () => {
     const pathname = usePathname();
     const [isAdmin, setIsAdmin] = useState(false);
     const [userName, setUserName] = useState('');
+    const [isSheetOpen, setIsSheetOpen] = useState(false);
 
     useEffect(() => {
         const checkUserStatus = () => {
@@ -32,7 +33,6 @@ const Header: React.FC = () => {
             window.removeEventListener('storage', checkUserStatus);
         };
     }, []);
-
 
     const getPageTitle = () => {
         switch (pathname) {
@@ -70,11 +70,15 @@ const Header: React.FC = () => {
         active:scale-95
     `;
 
+    const handleNavigation = (path: string) => {
+        router.push(path);
+        setIsSheetOpen(false);
+    };
+
     return (
         <header className="fixed top-0 left-0 right-0 flex flex-col bg-white bg-opacity-90 backdrop-blur-sm shadow-md z-50 rounded-b-2xl">
-
             <div className="flex justify-between items-center px-4 py-3">
-                <Sheet>
+                <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                     <SheetTrigger asChild>
                         <Button variant="ghost" className={buttonClass}>
                             <IoReorderThree className="h-6 w-6 text-gray-700" />
@@ -89,13 +93,13 @@ const Header: React.FC = () => {
                                 </CardContent>
                             </Card>
                             <Separator />
-                            <Button variant="ghost" onClick={() => router.push('/schedule')}>スケジュール確認</Button>
+                            <Button variant="ghost" onClick={() => handleNavigation('/schedule')}>スケジュール確認</Button>
                             <Separator />
-                            <Button variant="ghost" onClick={() => router.push('/shift_request')}>希望シフト提出</Button>
+                            <Button variant="ghost" onClick={() => handleNavigation('/shift_request')}>希望シフト提出</Button>
                             <Separator />
-                            <Button variant="ghost" onClick={() => router.push('/preset_creation')}>パターンの作成</Button>
+                            <Button variant="ghost" onClick={() => handleNavigation('/preset_creation')}>パターンの作成</Button>
                             <Separator />
-                            <Button variant="ghost" onClick={() => router.push('/update_profile')}>情報の更新</Button>
+                            <Button variant="ghost" onClick={() => handleNavigation('/update_profile')}>情報の更新</Button>
                             <Separator />
                         </nav>
                     </SheetContent>
