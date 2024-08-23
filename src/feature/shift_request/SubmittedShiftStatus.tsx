@@ -21,7 +21,7 @@ const SubmittedShiftStatus: React.FC<SubmittedShiftStatusProps> = ({ currentMont
         const fetchSubmittedShift = async () => {
             try {
                 const data = await getSubmittedShift(format(currentMonth, 'yyyy-MM-dd'));
-                if (data && data.shiftData && Object.keys(data.shiftData).length > 0) {
+                if (data && Object.keys(data.shiftData).length > 0) {
                     setIsSubmitted(true);
                     setSubmittedShiftData(data.shiftData);
                     setMinWorkHours(data.minWorkHours);

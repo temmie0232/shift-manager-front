@@ -73,6 +73,7 @@ const ShiftRequestPage: React.FC = () => {
         loadData();
     }, []);
 
+
     const handleDateSelect = (date: Date) => {
         if (selectedPreset) {
             const dateString = format(date, 'yyyy-MM-dd');
@@ -246,7 +247,6 @@ const ShiftRequestPage: React.FC = () => {
             description: '現在の内容でシフトを提出します。よろしいですか？',
             action: async () => {
                 try {
-                    // 一時保存を実行
                     await saveTemporaryShiftRequest(
                         format(currentDisplayMonth, 'yyyy-MM-dd'),
                         shiftData,
@@ -254,7 +254,6 @@ const ShiftRequestPage: React.FC = () => {
                         parseFloat(maxWorkHours)
                     );
 
-                    // シフト希望を提出
                     await submitShiftRequest(
                         format(currentDisplayMonth, 'yyyy-MM-dd'),
                         shiftData,
@@ -264,7 +263,7 @@ const ShiftRequestPage: React.FC = () => {
 
                     console.log('Shift request submitted and saved:', shiftData);
                     setIsDrawerOpen(false);
-                    setIsShiftSubmitted(true); // シフト提出状態を更新
+                    setIsShiftSubmitted(true); // この行を追加
 
                     toast({
                         title: "成功",
