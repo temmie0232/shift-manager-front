@@ -19,6 +19,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ employees }) => {
     const [birthday, setBirthday] = useState('');
     const [showUserInfoDialog, setShowUserInfoDialog] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [dialogType, setDialogType] = useState<'wage' | 'skills'>('wage');
     const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -96,7 +97,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ employees }) => {
                 {error && <div className="text-red-500 text-sm">{error}</div>}
                 <Button type="submit" className="w-full">ログイン</Button>
             </form>
-            <UserInfoDialog isOpen={showUserInfoDialog} onClose={handleUserInfoSubmit} />
+            <UserInfoDialog
+                isOpen={showUserInfoDialog}
+                onClose={handleUserInfoSubmit}
+                dialogType={dialogType}
+            />
         </>
     );
 };
