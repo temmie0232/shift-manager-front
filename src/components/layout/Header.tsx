@@ -16,22 +16,23 @@ const Header: React.FC = () => {
     const [userName, setUserName] = useState('');
 
     useEffect(() => {
-        const checkAdminStatus = () => {
+        const checkUserStatus = () => {
             const userDataString = localStorage.getItem('userData');
             if (userDataString) {
                 const userData = JSON.parse(userDataString);
-                setIsAdmin(userData.employee_type === 0);
+                setIsAdmin(userData.employee_type === 'full_time');
                 setUserName(userData.name);
             }
         };
 
-        checkAdminStatus();
-        window.addEventListener('storage', checkAdminStatus);
+        checkUserStatus();
+        window.addEventListener('storage', checkUserStatus);
 
         return () => {
-            window.removeEventListener('storage', checkAdminStatus);
+            window.removeEventListener('storage', checkUserStatus);
         };
     }, []);
+
 
     const getPageTitle = () => {
         switch (pathname) {
@@ -81,7 +82,7 @@ const Header: React.FC = () => {
                     </SheetTrigger>
                     <SheetContent side="left">
                         <nav className="flex flex-col space-y-1">
-                            <Card className="m-3 mt-10 mb-4 bg-gray-100">
+                            <Card className="m-2 mt-10 mb-6 bg-gray-100">
                                 <CardContent className="flex items-center p-2">
                                     <FaUserCircle className="text-gray-600 text-2xl mr-2" />
                                     <span className="text-sm font-medium">{userName}</span>
@@ -102,12 +103,16 @@ const Header: React.FC = () => {
                 <h1 className="text-2xl font-semibold text-gray-800">
                     {getPageTitle()}
                 </h1>
-                {isAdmin && (
+                {isAdmin ? (
                     <AdminPopover>
                         <Button variant="ghost" className={buttonClass}>
                             <GrUserAdmin className="h-6 w-6 text-gray-700" />
                         </Button>
                     </AdminPopover>
+                ) : (
+                    <div className={`${buttonClass} opacity-0 cursor-default`}>
+                        <GrUserAdmin className="h-6 w-6" />
+                    </div>
                 )}
             </div>
         </header>
