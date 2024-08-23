@@ -35,6 +35,7 @@ const ShiftRequestPage: React.FC = () => {
     const [isPresetDrawerOpen, setIsPresetDrawerOpen] = useState(false);
     const [minWorkHours, setMinWorkHours] = useState<string>('');
     const [maxWorkHours, setMaxWorkHours] = useState<string>('');
+    const [workHoursError, setWorkHoursError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [deadline, setDeadline] = useState<number | null>(null);
@@ -165,31 +166,50 @@ const ShiftRequestPage: React.FC = () => {
 
     const handleCancel = async () => {
         setConfirmDialogContent({
-            title: '変更を破棄',
-            description: '現在加えた変更が破棄され、以前の保存地点まで作業内容が戻ってしまいますがよろしいですか？',
+            title: 'シフト希望を提出',
+            description: '現在の内容でシフトを提出します。よろしいですか？',
             action: async () => {
                 try {
-                    const tempShiftRequest = await loadTemporaryShiftRequest(format(currentDisplayMonth, 'yyyy-MM-dd'));
-                    if (tempShiftRequest) {
-                        setShiftData(tempShiftRequest.shift_data);
-                        setMinWorkHours(tempShiftRequest.min_work_hours?.toString() || '');
-                        setMaxWorkHours(tempShiftRequest.max_work_hours?.toString() || '');
-                        setSelectedDates(Object.keys(tempShiftRequest.shift_data).map(dateStr => new Date(dateStr)));
-                    } else {
-                        setShiftData({});
-                        setSelectedDates([]);
-                        setMinWorkHours('');
-                        setMaxWorkHours('');
-                    }
+                    // 一時保存を実行
+                    await saveTemporaryShiftRequest(
+                        format(currentDisplayMonth, 'yyyy-MM-dd'),
+                        shiftData,
+                        parseFloat(minWorkHours),
+                        parseFloat(maxWorkHours)
+                    );
+
+                    // シフト希望を提出
+                    await submitShiftRequest(
+                        format(currentDisplayMonth, 'yyyy-MM-dd'),
+                        shiftData,
+                        parseFloat(minWorkHours),
+                        parseFloat(maxWorkHours)
+                    );
+
+                    console.log('Shift request submitted and saved:', shiftData);
                     setIsDrawerOpen(false);
+                    setIsShiftSubmitted(true); // シフト提出状態を更新
+
+                    toast({
+                        title: "成功",
+                        description: "シフト希望が正常に提出され、保存されました。",
+                        duration: 3000,
+                    });
                 } catch (error) {
-                    console.error('Failed to load temporary shift data:', error);
-                    setError('前回の保存データの読み込みに失敗しました。もう一度お試しください。');
+                    console.error('Failed to submit or save shift request:', error);
+
+                    toast({
+                        title: "エラー",
+                        description: "シフト希望の提出または保存に失敗しました。もう一度お試しください。",
+                        variant: "destructive",
+                        duration: 3000,
+                    });
                 }
             }
         });
         setIsConfirmDialogOpen(true);
     };
+
 
     const handleReset = () => {
         setConfirmDialogContent({
@@ -208,6 +228,19 @@ const ShiftRequestPage: React.FC = () => {
     };
 
     const handleSubmit = async () => {
+        const errorMessage = validateWorkHours();
+        setWorkHoursError(errorMessage);
+
+        if (errorMessage) {
+            toast({
+                title: "エラー",
+                description: errorMessage,
+                variant: "destructive",
+                duration: 3000,
+            });
+            return;
+        }
+
         setConfirmDialogContent({
             title: 'シフト希望を提出',
             description: '現在の内容でシフトを提出します。よろしいですか？',
@@ -233,7 +266,6 @@ const ShiftRequestPage: React.FC = () => {
                     setIsDrawerOpen(false);
                     setIsShiftSubmitted(true); // シフト提出状態を更新
 
-                    // Toastで成功メッセージを表示
                     toast({
                         title: "成功",
                         description: "シフト希望が正常に提出され、保存されました。",
@@ -242,7 +274,6 @@ const ShiftRequestPage: React.FC = () => {
                 } catch (error) {
                     console.error('Failed to submit or save shift request:', error);
 
-                    // Toastでエラーメッセージを表示
                     toast({
                         title: "エラー",
                         description: "シフト希望の提出または保存に失敗しました。もう一度お試しください。",
@@ -253,6 +284,21 @@ const ShiftRequestPage: React.FC = () => {
             }
         });
         setIsConfirmDialogOpen(true);
+    };
+
+    const validateWorkHours = (): string | null => {
+        if (!minWorkHours || !maxWorkHours) {
+            return '最低希望時間と最高希望時間を入力してください。';
+        }
+        const min = parseFloat(minWorkHours);
+        const max = parseFloat(maxWorkHours);
+        if (isNaN(min) || isNaN(max) || min < 0 || max < 0) {
+            return '有効な数値を入力してください。';
+        }
+        if (min > max) {
+            return '最低希望時間は最高希望時間以下にしてください。';
+        }
+        return null;
     };
 
 
@@ -299,9 +345,12 @@ const ShiftRequestPage: React.FC = () => {
                                 min="0"
                                 step="0.5"
                                 value={minWorkHours}
-                                onChange={(e) => setMinWorkHours(e.target.value)}
+                                onChange={(e) => {
+                                    setMinWorkHours(e.target.value);
+                                    setWorkHoursError(null);
+                                }}
                                 placeholder="最低"
-                                className="w-24"
+                                className={`w-24 ${workHoursError ? 'border-red-500' : ''}`}
                             />
                             <span>～</span>
                             <Input
@@ -309,14 +358,21 @@ const ShiftRequestPage: React.FC = () => {
                                 min="0"
                                 step="0.5"
                                 value={maxWorkHours}
-                                onChange={(e) => setMaxWorkHours(e.target.value)}
+                                onChange={(e) => {
+                                    setMaxWorkHours(e.target.value);
+                                    setWorkHoursError(null);
+                                }}
                                 placeholder="最高"
-                                className="w-24"
+                                className={`w-24 ${workHoursError ? 'border-red-500' : ''}`}
                             />
                             <span>時間</span>
                         </div>
+                        {workHoursError && <p className="text-red-500 text-sm">{workHoursError}</p>}
                     </div>
-                    <SubmittedShiftStatus currentMonth={currentDisplayMonth} isShiftSubmitted={isShiftSubmitted} />
+                    <SubmittedShiftStatus
+                        currentMonth={currentDisplayMonth}
+                        isShiftSubmitted={isShiftSubmitted}
+                    />
                 </div>
             </div>
             <div className="p-4 space-y-2 bg-white">

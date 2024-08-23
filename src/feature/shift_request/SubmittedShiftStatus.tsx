@@ -14,16 +14,23 @@ const SubmittedShiftStatus: React.FC<SubmittedShiftStatusProps> = ({ currentMont
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [submittedShiftData, setSubmittedShiftData] = useState<{ [key: string]: { startTime: string, endTime: string, color?: string } }>({});
+    const [minWorkHours, setMinWorkHours] = useState<number | null>(null);
+    const [maxWorkHours, setMaxWorkHours] = useState<number | null>(null);
 
     useEffect(() => {
         const fetchSubmittedShift = async () => {
             try {
                 const data = await getSubmittedShift(format(currentMonth, 'yyyy-MM-dd'));
-                if (data && Object.keys(data).length > 0) {
+                if (data && data.shiftData && Object.keys(data.shiftData).length > 0) {
                     setIsSubmitted(true);
-                    setSubmittedShiftData(data);
+                    setSubmittedShiftData(data.shiftData);
+                    setMinWorkHours(data.minWorkHours);
+                    setMaxWorkHours(data.maxWorkHours);
                 } else {
                     setIsSubmitted(false);
+                    setSubmittedShiftData({});
+                    setMinWorkHours(null);
+                    setMaxWorkHours(null);
                 }
             } catch (error) {
                 console.error('Failed to fetch submitted shift:', error);
@@ -32,7 +39,7 @@ const SubmittedShiftStatus: React.FC<SubmittedShiftStatusProps> = ({ currentMont
         };
 
         fetchSubmittedShift();
-    }, [currentMonth, isShiftSubmitted]); // isShiftSubmitted を依存配列に追加
+    }, [currentMonth, isShiftSubmitted]);
 
     return (
         <div className="mt-4 p-4 bg-white rounded-lg shadow">
@@ -58,6 +65,16 @@ const SubmittedShiftStatus: React.FC<SubmittedShiftStatusProps> = ({ currentMont
                         shiftData={submittedShiftData}
                         currentMonth={currentMonth}
                     />
+                    {(minWorkHours !== null || maxWorkHours !== null) && (
+                        <div className="mt-4">
+                            <h3 className="font-semibold mb-2">希望勤務時間</h3>
+                            <p>
+                                {minWorkHours !== null && `最低: ${minWorkHours}時間`}
+                                {minWorkHours !== null && maxWorkHours !== null && ' / '}
+                                {maxWorkHours !== null && `最高: ${maxWorkHours}時間`}
+                            </p>
+                        </div>
+                    )}
                 </DialogContent>
             </Dialog>
         </div>

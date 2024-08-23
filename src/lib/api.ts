@@ -344,7 +344,12 @@ async function uploadShift(type: 'current' | 'next', pdfFile: File | null, csvFi
     console.log('Response data:', responseData);
 }
 
-export async function getSubmittedShift(date: string): Promise<{ [key: string]: { startTime: string, endTime: string, color?: string } } | null> {
+
+export async function getSubmittedShift(date: string): Promise<{
+    shiftData: { [key: string]: { startTime: string, endTime: string, color?: string } };
+    minWorkHours: number | null;
+    maxWorkHours: number | null;
+} | null> {
     const response = await fetch(`${apiUrl}/api/shift_requests/submitted?date=${date}`, {
         headers: getHeaders(),
         credentials: 'include',
