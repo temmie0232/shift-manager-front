@@ -1,7 +1,7 @@
 import { Employee } from '@/types/employee';
 import { Preset, PresetBackend } from '@/types/preset';
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://yokohama-uwu.love:5000';
 
 let authToken: string | null = null;
 
