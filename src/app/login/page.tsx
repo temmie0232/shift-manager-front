@@ -6,10 +6,10 @@ import { fetchEmployees } from '@/lib/api';
 import { checkAutoLogin } from '@/lib/auth';
 import { Employee } from '@/types/employee';
 import { Badge } from "@/components/ui/badge";
-import PWAPrompt from '@/components/elements/PWAPrompt';
+import PWAInstallPrompt from '@/components/elements/PWAInstallPrompt';
 
-// パッケージのバージョン
-const VERSION = "1.0.3";
+// パッケージのバージョンを取得（実際のバージョン番号に置き換えてください）
+const VERSION = "1.1.0";
 
 export default function AuthPage() {
     const [employees, setEmployees] = useState<Employee[]>([]);
@@ -42,15 +42,15 @@ export default function AuthPage() {
     }
 
     return (
-        <div className="relative flex items-center justify-center min-h-screen bg-gray-100">
-            <div className="bg-white p-8 rounded-lg shadow-md w-3/4 max-w-96">
+        <div className="relative flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+            <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md mb-4">
                 <h1 className="text-2xl font-bold mb-6 text-center">ログイン</h1>
                 <LoginForm employees={employees} />
             </div>
+            <PWAInstallPrompt />
             <Badge className="absolute bottom-4 right-4 bg-gray-200 text-gray-700">
                 Version {VERSION}
             </Badge>
-            <PWAPrompt />
         </div>
     );
 }
