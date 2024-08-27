@@ -48,7 +48,7 @@ const ShiftTable: React.FC<ShiftTableProps> = ({ shifts, hourlyWage, calculateWo
         };
 
         // ページ読み込み後に少し遅延を入れてスクロールを実行
-        setTimeout(scrollToToday, 1000);
+        setTimeout(scrollToToday, 500);
     }, []);
 
     return (
