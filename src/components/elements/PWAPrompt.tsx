@@ -51,7 +51,7 @@ const PWAPrompt = () => {
                     <DialogHeader>
                         <DialogTitle>アプリをインストール</DialogTitle>
                         <DialogDescription>
-                            より良いエクスペリエンスのために、このアプリをホーム画面に追加しませんか？
+                            利便性を高めるために、インストールを推奨します。
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter className="sm:justify-start">
@@ -69,35 +69,43 @@ const PWAPrompt = () => {
             </Dialog>
 
             <AlertDialog open={showSecurityInfo} onOpenChange={setShowSecurityInfo}>
-                <AlertDialogContent>
+                <AlertDialogContent className="max-w-3xl">
                     <AlertDialogHeader>
-                        <AlertDialogTitle>アプリの安全性について</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            当アプリは、ユーザーの皆様のデータとプライバシーを最優先に考え、以下のセキュリティ対策を実施しています：
+                        <AlertDialogTitle>PWAの安全性とインストールについて</AlertDialogTitle>
+                        <AlertDialogDescription className="space-y-4">
+                            <p>
+                                このアプリはPWA（Progressive Web App）として実装されており、通常のネイティブアプリと比較してより安全にご利用いただけます。
+                            </p>
 
-                            <ul className="list-disc pl-5 mt-2 space-y-1">
+                            <h3 className="font-semibold">PWAの安全性とインストールの仕組み</h3>
+                            <ul className="list-disc pl-5 space-y-2">
                                 <li>
-                                    <strong>HTTPS通信</strong>
-                                    <ul className="list-circle pl-5">
-                                        <li>すべての通信は暗号化されたHTTPS接続を使用しています。</li>
-                                        <li>これにより、データの傍受や改ざんのリスクを最小限に抑えています。</li>
-                                    </ul>
+                                    <strong>インストールに関して：</strong> PWAは通常のダウンロードとは異なる仕組みでインストールされます。ファイルを直接ダウンロードせず、ウェブブラウザを通じて機能するため、ウイルス感染のリスクが非常に低くなっています。
                                 </li>
                                 <li>
-                                    <strong>JWT（JSON Web Token）認証</strong>
-                                    <ul className="list-circle pl-5">
-                                        <li>ログイン後の認証にJWTを使用しています。</li>
-                                        <li>これにより、セッションの安全性を高め、なりすましのリスクを軽減しています。</li>
-                                    </ul>
+                                    <strong>ブラウザベースの動作：</strong> PWAを「インストール」する際、実際にはアプリのアイコンや設定がホーム画面に追加され、アプリのデータがキャッシュされるだけです。これはブラウザ内で動作するため、システムに直接影響を与えることはありません。
                                 </li>
                                 <li>
-                                    <strong>データストレージの安全性</strong>
-                                    <ul className="list-circle pl-5">
-                                        <li>ローカルでの重要なデータの保存には、暗号化されたストレージを使用しています。</li>
-                                        <li>サーバー側でのデータ保存も適切に暗号化されています。</li>
-                                    </ul>
+                                    <strong>制限されたシステムアクセス：</strong> ネイティブアプリと異なり、PWAはシステム全体へのアクセスが制限されており、セキュリティが強化されています。
+                                </li>
+                                <li>
+                                    <strong>暗号化された通信：</strong> PWAはHTTPS通信を使用しているため、すべてのデータのやり取りが暗号化されています。これにより、データの傍受や改ざんのリスクが大幅に低減されます。
                                 </li>
                             </ul>
+
+                            <h3 className="font-semibold">追加のセキュリティ対策</h3>
+                            <ul className="list-disc pl-5 space-y-2">
+                                <li>
+                                    <strong>JWT（JSON Web Token）認証：</strong> ログイン後の認証にJWTを使用し、セッションの安全性を高め、なりすましのリスクを軽減しています。
+                                </li>
+                                <li>
+                                    <strong>安全なデータストレージ：</strong> ローカルおよびサーバー側での重要なデータの保存には、適切な暗号化を使用しています。
+                                </li>
+                            </ul>
+
+                            <p>
+                                これらの実装で、当アプリはネイティブアプリと同等以上の機能性を提供しながら、より高い安全性を確保しています。PWAをインストールすることでウイルスに感染するリスクは、通常のアプリのダウンロードに比べてほとんどないと言えます。
+                            </p>
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
