@@ -46,6 +46,8 @@ const ShiftRequestPage: React.FC = () => {
 
     useEffect(() => {
         const loadData = async () => {
+            setIsLoading(true);
+            setError(null);
             try {
                 const fetchedPresets = await fetchPresets();
                 setPresets(fetchedPresets);
@@ -59,8 +61,18 @@ const ShiftRequestPage: React.FC = () => {
                     setSelectedDates(Object.keys(tempShiftRequest.shift_data).map(dateStr => new Date(dateStr)));
                 }
 
-                const fetchedDeadline = await getShiftDeadline();
-                setDeadline(fetchedDeadline);
+                const fetchShiftDeadline = async () => {
+                    try {
+                        const fetchedDeadline = await getShiftDeadline(); // この関数はlib/apiからインポートされたもの
+                        setDeadline(fetchedDeadline);
+                    } catch (error) {
+                        console.error('Failed to fetch deadline:', error);
+                        // エラーが発生しても処理を続行
+                        setDeadline(null);
+                    }
+                };
+
+                await fetchShiftDeadline();
 
                 setCurrentDisplayMonth(nextMonth);
             } catch (error) {
@@ -70,6 +82,7 @@ const ShiftRequestPage: React.FC = () => {
                 setIsLoading(false);
             }
         };
+
         loadData();
     }, []);
 
@@ -321,7 +334,7 @@ const ShiftRequestPage: React.FC = () => {
         <div className="flex flex-col h-[calc(100vh-8rem)] overflow-hidden">
             <div className="flex-grow overflow-hidden">
                 <div className="h-full overflow-y-auto p-4">
-                    {getDeadlineText() && (
+                    {deadline !== null && (
                         <div className="mb-4 flex items-center justify-center">
                             <Badge variant="secondary" className="px-4 py-2 text-base font-medium">
                                 <CalendarIcon className="mr-2 h-4 w-4" />
