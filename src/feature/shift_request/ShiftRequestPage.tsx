@@ -61,18 +61,8 @@ const ShiftRequestPage: React.FC = () => {
                     setSelectedDates(Object.keys(tempShiftRequest.shift_data).map(dateStr => new Date(dateStr)));
                 }
 
-                const fetchShiftDeadline = async () => {
-                    try {
-                        const fetchedDeadline = await getShiftDeadline(); // この関数はlib/apiからインポートされたもの
-                        setDeadline(fetchedDeadline);
-                    } catch (error) {
-                        console.error('Failed to fetch deadline:', error);
-                        // エラーが発生しても処理を続行
-                        setDeadline(null);
-                    }
-                };
-
-                await fetchShiftDeadline();
+                const fetchedDeadline = await getShiftDeadline();
+                setDeadline(fetchedDeadline);
 
                 setCurrentDisplayMonth(nextMonth);
             } catch (error) {
@@ -316,8 +306,8 @@ const ShiftRequestPage: React.FC = () => {
 
     const getDeadlineText = () => {
         if (!deadline) return null;
-        const displayMonth = currentDisplayMonth.getMonth(); // 0-indexed
-        const deadlineMonth = displayMonth === 0 ? 12 : displayMonth; // 1月の場合は12月を表示
+        const displayMonth = currentDisplayMonth.getMonth();
+        const deadlineMonth = displayMonth === 0 ? 12 : displayMonth;
         const deadlineMonthName = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'][deadlineMonth - 1];
         return `${deadlineMonthName}月${deadline}日`;
     };
@@ -334,7 +324,7 @@ const ShiftRequestPage: React.FC = () => {
         <div className="flex flex-col h-[calc(100vh-8rem)] overflow-hidden">
             <div className="flex-grow overflow-hidden">
                 <div className="h-full overflow-y-auto p-4">
-                    {deadline !== null && (
+                    {deadline !== null && getDeadlineText() && (
                         <div className="mb-4 flex items-center justify-center">
                             <Badge variant="secondary" className="px-4 py-2 text-base font-medium">
                                 <CalendarIcon className="mr-2 h-4 w-4" />
