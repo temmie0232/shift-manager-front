@@ -1,16 +1,30 @@
 "use client"
 import { useState, useEffect } from 'react';
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 const PWAPrompt = () => {
     const [showPrompt, setShowPrompt] = useState(false);
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
     useEffect(() => {
-        window.addEventListener('beforeinstallprompt', (e) => {
+        const handler = (e: Event) => {
             e.preventDefault();
             setDeferredPrompt(e);
             setShowPrompt(true);
-        });
+        };
+
+        window.addEventListener('beforeinstallprompt', handler);
+
+        return () => {
+            window.removeEventListener('beforeinstallprompt', handler);
+        };
+    }, []);
+
+    useEffect(() => {
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            setShowPrompt(false);
+        }
     }, []);
 
     const handleInstall = () => {
@@ -29,12 +43,24 @@ const PWAPrompt = () => {
     if (!showPrompt) return null;
 
     return (
-        <div className="fixed bottom-16 left-0 right-0 bg-white p-4 shadow-lg">
-            <p>アプリをインストールしますか？</p>
-            <button onClick={handleInstall} className="bg-blue-500 text-white px-4 py-2 rounded mt-2">
-                インストール
-            </button>
-        </div>
+        <Dialog open={showPrompt} onOpenChange={setShowPrompt}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>アプリをインストール</DialogTitle>
+                    <DialogDescription>
+                        より良いエクスペリエンスのために、このアプリをホーム画面に追加しませんか？
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="flex justify-end space-x-2">
+                    <Button variant="outline" onClick={() => setShowPrompt(false)}>
+                        後で
+                    </Button>
+                    <Button onClick={handleInstall}>
+                        インストール
+                    </Button>
+                </div>
+            </DialogContent>
+        </Dialog>
     );
 };
 

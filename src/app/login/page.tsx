@@ -6,9 +6,10 @@ import { fetchEmployees } from '@/lib/api';
 import { checkAutoLogin } from '@/lib/auth';
 import { Employee } from '@/types/employee';
 import { Badge } from "@/components/ui/badge";
+import PWAPrompt from '@/components/elements/PWAPrompt';
 
-// パッケージのバージョンを取得（実際のバージョン番号に置き換えてください）
-const VERSION = "1.0.0";
+// パッケージのバージョン
+const VERSION = "1.0.3";
 
 export default function AuthPage() {
     const [employees, setEmployees] = useState<Employee[]>([]);
@@ -49,6 +50,7 @@ export default function AuthPage() {
             <Badge className="absolute bottom-4 right-4 bg-gray-200 text-gray-700">
                 Version {VERSION}
             </Badge>
+            <PWAPrompt />
         </div>
     );
 }
