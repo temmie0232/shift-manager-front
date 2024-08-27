@@ -8,7 +8,7 @@ import { Employee } from '@/types/employee';
 import { Badge } from "@/components/ui/badge";
 import PWAInstallPrompt from '@/components/elements/PWAInstallPrompt';
 
-// パッケージのバージョンを取得（実際のバージョン番号に置き換えてください）
+// パッケージのバージョン
 const VERSION = "1.1.0";
 
 export default function AuthPage() {
@@ -42,8 +42,8 @@ export default function AuthPage() {
     }
 
     return (
-        <div className="relative flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
-            <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md mb-4">
+        <div className="relative flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4 space-y-4">
+            <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
                 <h1 className="text-2xl font-bold mb-6 text-center">ログイン</h1>
                 <LoginForm employees={employees} />
             </div>

@@ -1,18 +1,16 @@
 "use client"
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, AlertDialogCancel } from "@/components/ui/alert-dialog";
 
 const PWAInstallPrompt = () => {
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-    const [isInstallable, setIsInstallable] = useState(false);
 
     useEffect(() => {
         const handler = (e: Event) => {
             e.preventDefault();
             setDeferredPrompt(e);
-            setIsInstallable(true);
         };
 
         window.addEventListener('beforeinstallprompt', handler);
@@ -28,22 +26,20 @@ const PWAInstallPrompt = () => {
             deferredPrompt.userChoice.then((choiceResult: { outcome: string }) => {
                 if (choiceResult.outcome === 'accepted') {
                     console.log('User accepted the install prompt');
-                    setIsInstallable(false);
                 }
                 setDeferredPrompt(null);
             });
+        } else {
+            alert('このアプリは既にインストールされているか、インストールできない環境です。');
         }
     };
-
-    if (!isInstallable) return null;
 
     return (
         <Card className="w-full max-w-md">
             <CardHeader>
-                <CardTitle>アプリをインストール</CardTitle>
-                <CardDescription>より快適な利用体験のために、このアプリをホーム画面に追加しませんか？</CardDescription>
+                <CardTitle>アプリのインストール</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex justify-between">
                 <AlertDialog>
                     <AlertDialogTrigger asChild>
                         <Button variant="outline">安全性について</Button>
@@ -65,10 +61,8 @@ const PWAInstallPrompt = () => {
                         <AlertDialogCancel>閉じる</AlertDialogCancel>
                     </AlertDialogContent>
                 </AlertDialog>
-            </CardContent>
-            <CardFooter>
                 <Button onClick={handleInstall}>インストール</Button>
-            </CardFooter>
+            </CardContent>
         </Card>
     );
 };
