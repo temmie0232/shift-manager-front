@@ -6,12 +6,14 @@ import { Label } from "@/components/ui/label";
 import { saveShiftDeadline, getShiftDeadline } from '@/lib/api';
 
 const ShiftSettingPage: React.FC = () => {
-    const [deadline, setDeadline] = useState<number>(22);
+    const [deadline, setDeadline] = useState<number | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchDeadline = async () => {
+            setIsLoading(true);
+            setError(null);
             try {
                 const fetchedDeadline = await getShiftDeadline();
                 setDeadline(fetchedDeadline);
@@ -27,6 +29,10 @@ const ShiftSettingPage: React.FC = () => {
     }, []);
 
     const handleSave = async () => {
+        if (deadline === null) {
+            setError('有効な締切日を入力してください。');
+            return;
+        }
         try {
             await saveShiftDeadline(deadline);
             alert('締切日が保存されました。');
@@ -54,8 +60,11 @@ const ShiftSettingPage: React.FC = () => {
                         type="number"
                         min="1"
                         max="31"
-                        value={deadline}
-                        onChange={(e) => setDeadline(parseInt(e.target.value))}
+                        value={deadline !== null ? deadline : ''}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            setDeadline(value === '' ? null : parseInt(value));
+                        }}
                     />
                 </div>
                 <Button onClick={handleSave}>保存</Button>
