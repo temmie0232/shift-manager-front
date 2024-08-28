@@ -25,7 +25,11 @@ const AdminPopover: React.FC<AdminPopoverProps> = ({ children }) => {
                     >
                         シフトのアップロード
                     </Button>
-                    <Button variant="outline" className="w-full justify-start">
+                    <Button
+                        variant="outline"
+                        className="w-full justify-start"
+                        onClick={() => router.push('/admin/shift_creation')}
+                    >
                         シフト作成
                     </Button>
                     <Button

@@ -1,7 +1,7 @@
 import { Employee } from '@/types/employee';
 import { Preset, PresetBackend } from '@/types/preset';
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://yokohama-uwu.love:5000';
 
 let authToken: string | null = null;
 
@@ -285,18 +285,27 @@ export async function saveShiftDeadline(deadline: number): Promise<void> {
     }
 }
 
-export async function getShiftDeadline(): Promise<number> {
-    const response = await fetch(`${apiUrl}/api/admin/shift_deadline`, {
-        headers: getHeaders(),
-        credentials: 'include',
-    });
-    if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to get shift deadline');
+export async function getShiftDeadline(): Promise<number | null> {
+    try {
+        const response = await fetch(`${apiUrl}/api/admin/shift_deadline`, {
+            headers: getHeaders(),
+            credentials: 'include',
+        });
+        if (!response.ok) {
+            if (response.status === 401) {
+                console.warn('User not authorized to view shift deadline');
+                return null;
+            }
+            throw new Error('Failed to get shift deadline');
+        }
+        const data = await response.json();
+        return data.deadline;
+    } catch (error) {
+        console.error('Error fetching shift deadline:', error);
+        return null;
     }
-    const data = await response.json();
-    return data.deadline;
 }
+
 export async function uploadCurrentMonthShift(pdfFile: File | null, csvFile: File | null): Promise<void> {
     await uploadShift('current', pdfFile, csvFile);
 }
