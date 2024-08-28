@@ -47,7 +47,6 @@ export default function AuthPage() {
                 <h1 className="text-2xl font-bold mb-6 text-center">ログイン</h1>
                 <LoginForm employees={employees} />
             </div>
-            <PWAInstallPrompt />
             <Badge className="absolute bottom-4 right-4 bg-gray-200 text-gray-700">
                 Version {VERSION}
             </Badge>

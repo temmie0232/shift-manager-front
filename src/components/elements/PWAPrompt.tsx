@@ -1,8 +1,9 @@
 "use client"
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel } from "@/components/ui/alert-dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const PWAPrompt = () => {
     const [showPrompt, setShowPrompt] = useState(false);
@@ -72,6 +73,8 @@ const PWAPrompt = () => {
                 <AlertDialogContent className="max-w-3xl">
                     <AlertDialogHeader>
                         <AlertDialogTitle>PWAの安全性とインストールについて</AlertDialogTitle>
+                    </AlertDialogHeader>
+                    <ScrollArea className="h-[60vh] pr-4">
                         <AlertDialogDescription className="space-y-4">
                             <p>
                                 このアプリはPWA（Progressive Web App）として実装されており、通常のネイティブアプリと比較してより安全にご利用いただけます。
@@ -104,10 +107,10 @@ const PWAPrompt = () => {
                             </ul>
 
                             <p>
-                                これらの実装で、当アプリはネイティブアプリと同等以上の機能性を提供しながら、より高い安全性を確保しています。PWAをインストールすることでウイルスに感染するリスクは、通常のアプリのダウンロードに比べてほとんどないと言えます。
+                                これらの実装で、ネイティブアプリと同等以上の機能性を提供しながら、より高い安全性を確保しています。PWAをインストールすることでウイルスに感染するリスクは、通常のアプリのダウンロードに比べてほとんどないと言えます。
                             </p>
                         </AlertDialogDescription>
-                    </AlertDialogHeader>
+                    </ScrollArea>
                     <AlertDialogFooter>
                         <AlertDialogCancel onClick={() => setShowSecurityInfo(false)}>閉じる</AlertDialogCancel>
                     </AlertDialogFooter>
