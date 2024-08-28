@@ -247,9 +247,9 @@ export async function updateUserInfo(hourlyWage: number, skills: string[]): Prom
     }
 }
 
-export async function downloadShift(): Promise<void> {
+export async function downloadShift(type: 'current' | 'next'): Promise<void> {
     try {
-        const response = await fetch(`${apiUrl}/api/download_shift`, {
+        const response = await fetch(`${apiUrl}/api/download_shift?type=${type}`, {
             headers: getHeaders(),
             credentials: 'include',
         });
@@ -260,18 +260,19 @@ export async function downloadShift(): Promise<void> {
             const a = document.createElement('a');
             a.style.display = 'none';
             a.href = url;
-            a.download = 'current_shift.pdf';
+            a.download = `${type}_shift.pdf`;
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
         } else {
-            throw new Error('Failed to download shift');
+            throw new Error(`Failed to download ${type} shift`);
         }
     } catch (error) {
         console.error('Download error:', error);
         throw error;
     }
 }
+
 export async function saveShiftDeadline(deadline: number): Promise<void> {
     const response = await fetch(`${apiUrl}/api/admin/shift_deadline`, {
         method: 'POST',
@@ -360,3 +361,4 @@ export async function getSubmittedShift(date: string): Promise<{
     }
     return response.json();
 }
+
