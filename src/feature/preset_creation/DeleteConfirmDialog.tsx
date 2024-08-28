@@ -23,10 +23,10 @@ const DeleteConfirmDialog: React.FC<DeleteConfirmDialogProps> = ({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
         <DialogContent>
             <DialogHeader>
-                <DialogTitle>プリセットの削除</DialogTitle>
+                <DialogTitle>時間帯セットの削除</DialogTitle>
             </DialogHeader>
             <DialogDescription>
-                このプリセットを削除してもよろしいですか？この操作は取り消せません。
+                この時間帯セットを削除してもよろしいですか？この操作は取り消せません。
             </DialogDescription>
             <DialogFooter className="sm:justify-start">
                 <div className="w-full flex justify-between gap-4">

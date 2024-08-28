@@ -52,7 +52,7 @@ const PresetSelectionDrawer: React.FC<PresetSelectionDrawerProps> = ({
         <Drawer open={isOpen} onOpenChange={onOpenChange}>
             <DrawerContent>
                 <DrawerHeader>
-                    <DrawerTitle>プリセット選択</DrawerTitle>
+                    <DrawerTitle>時間帯セット選択</DrawerTitle>
                 </DrawerHeader>
                 <ScrollArea className="h-[50vh] px-4">
                     <div className="space-y-2">

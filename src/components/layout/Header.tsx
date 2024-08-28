@@ -41,7 +41,7 @@ const Header: React.FC = () => {
             case '/shift_request':
                 return '希望シフト入力';
             case '/preset_creation':
-                return 'プリセットの作成';
+                return '時間帯セットの作成';
             case '/chat':
                 return 'チャット';
             case '/status_check':

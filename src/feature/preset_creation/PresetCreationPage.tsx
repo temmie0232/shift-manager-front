@@ -35,7 +35,7 @@ const PresetCreationPage = () => {
                 setPresets(fetchedPresets);
             } catch (error) {
                 console.error('Failed to load presets:', error);
-                setError('プリセットの読み込みに失敗しました。もう一度お試しください。');
+                setError('時間帯セットの読み込みに失敗しました。もう一度お試しください。');
             } finally {
                 setIsLoading(false);
             }
@@ -89,7 +89,7 @@ const PresetCreationPage = () => {
             setNewPreset({ title: '', color: '#000000', startTime: '', endTime: '' });
         } catch (error) {
             console.error('Failed to add preset:', error);
-            setError('プリセットの追加に失敗しました。もう一度お試しください。');
+            setError('時間帯セットの追加に失敗しました。もう一度お試しください。');
         }
     };
 
@@ -110,7 +110,7 @@ const PresetCreationPage = () => {
                 setPresetToDelete(null);
             } catch (error) {
                 console.error('Failed to delete preset:', error);
-                setError('プリセットの削除に失敗しました。もう一度お試しください。');
+                setError('時間帯セットの削除に失敗しました。もう一度お試しください。');
             }
         }
     };

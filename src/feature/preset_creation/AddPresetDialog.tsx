@@ -98,7 +98,7 @@ const AddPresetDialog: React.FC<AddPresetDialogProps> = ({
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>新しいプリセットを追加</DialogTitle>
+                    <DialogTitle>新しい時間帯セットを追加</DialogTitle>
                 </DialogHeader>
                 <div className="grid gap-6 py-4">
                     <div className="grid grid-cols-4 items-center gap-4">

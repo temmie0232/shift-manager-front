@@ -379,7 +379,7 @@ const ShiftRequestPage: React.FC = () => {
             </div>
             <div className="p-4 space-y-2 bg-white">
                 <Button onClick={() => setIsPresetDrawerOpen(true)} className="w-full">
-                    プリセット選択
+                    時間帯セット選択
                 </Button>
                 <Button onClick={() => setIsDrawerOpen(true)} className="w-full">
                     シフト操作
