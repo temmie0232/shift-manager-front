@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import ShiftTable from "@/feature/schedule/ShiftTable";
 import ShiftDetailsDrawer from "@/feature/schedule/ShiftDetailsDrawer";
 import { parse, differenceInMinutes } from 'date-fns';
+import { downloadShift } from '@/lib/api';
 
 interface Shift {
     date: string;
@@ -132,31 +133,21 @@ const SchedulePage = () => {
         return { totalWorkDays, totalWorkHours, remainingMinutes, totalSalary };
     };
 
-    const handleDownload = async () => {
+    const handleDownloadCurrent = async () => {
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/download_shift`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-                },
-            });
-
-            if (response.ok) {
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                a.download = 'current_shift.pdf';
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-            } else {
-                const errorData = await response.json();
-                setError(errorData.error || 'シフトのダウンロードに失敗しました');
-            }
+            await downloadShift('current');
         } catch (error) {
-            console.error('Download error:', error);
-            setError('ネットワークエラーが発生しました');
+            console.error('Failed to download current month shift:', error);
+            setError('現在のシフトのダウンロードに失敗しました');
+        }
+    };
+
+    const handleDownloadNext = async () => {
+        try {
+            await downloadShift('next');
+        } catch (error) {
+            console.error('Failed to download next month shift:', error);
+            setError('来月のシフトのダウンロードに失敗しました');
         }
     };
 
@@ -186,7 +177,8 @@ const SchedulePage = () => {
                 totalWorkHours={totalWorkHours}
                 totalWorkMinutes={remainingMinutes}
                 totalSalary={totalSalary}
-                onDownload={handleDownload}
+                onDownloadCurrent={handleDownloadCurrent}
+                onDownloadNext={handleDownloadNext}
             />
         </div>
     );

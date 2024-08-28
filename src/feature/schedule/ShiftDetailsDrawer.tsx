@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "@/components/ui/drawer";
 import { Separator } from '@/components/ui/separator';
-import { downloadShift } from '@/lib/api';
 
 interface ShiftDetailsDrawerProps {
     isOpen: boolean;
@@ -12,6 +11,8 @@ interface ShiftDetailsDrawerProps {
     totalWorkHours: number;
     totalWorkMinutes: number;
     totalSalary: number;
+    onDownloadCurrent: () => Promise<void>;
+    onDownloadNext: () => Promise<void>;
 }
 
 const ShiftDetailsDrawer: React.FC<ShiftDetailsDrawerProps> = ({
@@ -21,21 +22,14 @@ const ShiftDetailsDrawer: React.FC<ShiftDetailsDrawerProps> = ({
     totalWorkHours,
     totalWorkMinutes,
     totalSalary,
+    onDownloadCurrent,
+    onDownloadNext
 }) => {
-    const handleDownload = async (type: 'current' | 'next') => {
-        try {
-            await downloadShift(type);
-        } catch (error) {
-            console.error(`Failed to download ${type} shift:`, error);
-            // エラー処理（例：ユーザーへの通知）を追加することをお勧めします
-        }
-    };
-
     return (
         <Drawer open={isOpen} onOpenChange={onClose}>
             <DrawerContent>
                 <DrawerHeader>
-                    <DrawerTitle>シフト詳細</DrawerTitle>
+                    <DrawerTitle>今月のシフト詳細</DrawerTitle>
                 </DrawerHeader>
                 <div className="p-4 space-y-5">
                     <Card>
@@ -64,11 +58,11 @@ const ShiftDetailsDrawer: React.FC<ShiftDetailsDrawerProps> = ({
                     </Card>
                 </div>
                 <Separator />
-                <DrawerFooter className="space-y-2">
-                    <Button onClick={() => handleDownload('current')} className="w-full">
+                <DrawerFooter>
+                    <Button onClick={onDownloadCurrent} className="w-full">
                         今月のシフトをダウンロード
                     </Button>
-                    <Button onClick={() => handleDownload('next')} className="w-full">
+                    <Button onClick={onDownloadNext} className="w-full">
                         来月のシフトをダウンロード
                     </Button>
                 </DrawerFooter>
